@@ -1,0 +1,19 @@
+# Unreal build output
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Visual Studio
+.vs/
+.vscode/
+*.sln
+*.VC.db
+*.VC.opendb
+.vsconfig
+
+# Mac
+*.xcworkspace
+
+# Assets (nothing intersting)
+Content/
