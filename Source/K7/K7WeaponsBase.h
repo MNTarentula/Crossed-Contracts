@@ -16,7 +16,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	USkeletalMeshComponent* MeshComponent;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
+	int32 interesting = 50;
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Use(); // virtual allows Ranged and Melee to override this
 	virtual AK7WeaponsBase* taked();

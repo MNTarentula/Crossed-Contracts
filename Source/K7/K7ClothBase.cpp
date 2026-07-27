@@ -17,7 +17,7 @@ AK7ClothBase::AK7ClothBase()
 void AK7ClothBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+    this->Tags.Add(FName("interst"));
 }
 
 // Called every frame

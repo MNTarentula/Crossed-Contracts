@@ -25,6 +25,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	ACharacter* getNearstNpDir(float MaxRange, float MaxAngleDegrees);
+	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);
 	FVector PointB;
 	int workspace;
 public:	

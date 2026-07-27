@@ -14,13 +14,14 @@
 #include <iostream>
 #include <algorithm>
 #include "Kismet/GameplayStatics.h"
+#include "K7WeaponsBase.h"
+
 // Sets default values
 AK7Civilian::AK7Civilian()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-    active = FMath::FRandRange(0.5, 2.5);
-    trust = FMath::FRandRange(0.25, 2.0);
+    
 	if (active >= 2.f) {
 		this->maxSpead = 500.f;
 	}
@@ -91,11 +92,11 @@ void AK7Civilian::Tick(float DeltaTime)
 	
     float Dist = FVector::Dist(GetActorLocation(), PointB);
 
-    if (Dist < 50.f && curAreaT == nullptr)
+    if (Dist < 50.f && (curAreaT == nullptr || curAreaT->TaskType == ETaskType::None))// if not had a task just not stop wander and find new thing to look at
     {
         ft();
     }
-    if (scary > 100 * chill) {
+    if (scary > 100 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
         
         if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::Safe) {
             setter(ETaskType::Safe);
@@ -144,7 +145,7 @@ void AK7Civilian::Tick(float DeltaTime)
 	RotatorHead = FMath::RInterpTo(RotatorHead, TargetRotation, DeltaTime, HeadInterpSpeed);
 }
 
-void AK7Civilian::eers() {
+void AK7Civilian::eers() {// timer setter for the ok()
 	
 	GetWorldTimerManager().ClearTimer(ers);
 	GetWorldTimerManager().SetTimer(
@@ -155,7 +156,7 @@ void AK7Civilian::eers() {
 		true
 	);
 }
-void AK7Civilian::time() {
+void AK7Civilian::time() {// timer setter for the ft()
 
     GetWorldTimerManager().ClearTimer(tim);
     GetWorldTimerManager().SetTimer(
@@ -166,7 +167,7 @@ void AK7Civilian::time() {
         true
     );
 }
-void AK7Civilian::Zapoier() {
+void AK7Civilian::Zapoier() {// timer setter for the needs.
 
     GetWorldTimerManager().ClearTimer(zapoi);
     GetWorldTimerManager().SetTimer(
@@ -177,7 +178,8 @@ void AK7Civilian::Zapoier() {
         true
     );
 }
-void AK7Civilian::ft() {
+void AK7Civilian::ft() {// first think it faster then ok happend and it just anlyze current world around decicde what to look and the emrgnsy fealling not toilet not work, just if scary,ivistigate or take health care.
+
     int32 RandomNum = FMath::RandRange(1, 100);
     PointB = GetActorLocation();
     float max = 1000.f;
@@ -187,41 +189,29 @@ void AK7Civilian::ft() {
         if (currentC) {
             PointB = currentC->GetActorLocation();
         }
-        else {
+        else {// take a random point
             FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
-
-            // 2. Generate a random distance up to the maximum radius
             float RandomDistance = FMath::FRandRange(0.0f, max);
-
-            // 3. (Optional) Introduce angle variance to create a cone/spread around the direction
-            // Set ConeHalfAngleDegrees to 0.0f if you want a strict straight-line variation
             float ConeHalfAngleDegrees = 15.0f;
             FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
-
-            // 4. Combine into final world position
             PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
         }
 
     }
     else if (RandomNum >= 60 && false) {
-        //now it not work becuase fuck i not want add more big function to search object charthers and the other thing good
+        //now it not work becuase i not want add more big function to search object like pistols and cloths on the floor
     }
-    else {
+    else {// take a random point, same code two time, but it in development area becuase i do more oop after.
         FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
 
-        // 2. Generate a random distance up to the maximum radius
-        float RandomDistance = FMath::FRandRange(0.0f, max);
 
-        // 3. (Optional) Introduce angle variance to create a cone/spread around the direction
-        // Set ConeHalfAngleDegrees to 0.0f if you want a strict straight-line variation
+        float RandomDistance = FMath::FRandRange(0.0f, max);      
         float ConeHalfAngleDegrees = 15.0f;
         FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
-
-        // 4. Combine into final world position
         PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
     }
 
-    if (currekNpc) {
+    if (currekNpc) { // it scary part, it just thing bassed on people the npc current look at, if he look at one but he got shoted scary not go up but that gonna be added soon
         int timeScare = currekNpc->wirdo + 0;
 
         AK7CombatBase* cur = Cast<AK7CombatBase>(currekNpc);
@@ -252,7 +242,7 @@ void AK7Civilian::ft() {
         scary += timeScare / trust;
     }
 }
-void AK7Civilian::setter(ETaskType a) {
+void AK7Civilian::setter(ETaskType a) {// just a setter of current type of task, not to where go, it set what to do by the input.
     curAreaT = nullptr;
     for (AATaskArea* Area : Areas)
     {
@@ -266,11 +256,11 @@ void AK7Civilian::setter(ETaskType a) {
         }
     }
 }
-void AK7Civilian::ok() {
+void AK7Civilian::ok() { // it function of hard thinking that decide by current needs and prority of them body what task currentlly more importnat.
     
     
-    int biggestNeed = -1;
-    int secondNeed = -1;
+    //int biggestNeed = -1;
+    //int secondNeed = -1;
     int toiletScore;
     int hungScore;
     int workScore;
@@ -315,7 +305,7 @@ void AK7Civilian::ok() {
     }
     //in future it be much more big and strong now it even smaller then ft, because it not fully field and not really change by many factor but like that.
 }
-void AK7Civilian::i() {
+void AK7Civilian::i() { // i it excution of the body it chosse nearest point of the task and go to them, that function not decide it do.
     if (!curAreaT)
         return;
     float Dist = FVector::Dist(GetActorLocation(), PointB);
@@ -351,7 +341,7 @@ void AK7Civilian::i() {
         randomP(PointB);
     }
 }
-void AK7Civilian::ctf() {
+void AK7Civilian::ctf() {// called evry 2 seconds, but only where in zone of task and had that task cant be in toilet and do the task of food. in tick main logic of check that.
     if (curAreaT != nullptr) {
         if (curAreaT->TaskType == ETaskType::Toilet) {
             toilet = FMath::Max(0, toilet - 10);
@@ -364,26 +354,120 @@ void AK7Civilian::ctf() {
         }
     }
 }
-void AK7Civilian::needTick() {
-    toilet+=2;
-    hung+=2;
+void AK7Civilian::needTick() { // it update the needs evry 20 seceonds by timer zapoier or like that
+    toilet+=4;
+    hung+=4;
+}
+AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
+    AActor* mostHave = nullptr;
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+    TArray<AActor*> IgnoredActors;
+    IgnoredActors.Add(this); 
+
+    TArray<AActor*> OverlappingActors;
+    TArray<AActor*> taggedOnes;
+    bool bFoundActors = UKismetSystemLibrary::SphereOverlapActors(
+        GetWorld(),
+        GetActorLocation(),
+        MaxRange,
+        ObjectTypes,
+        AActor::StaticClass(),
+        IgnoredActors,
+        OverlappingActors
+    );
+    if (bFoundActors) {
+        for (AActor* Actor : OverlappingActors)
+        {
+            if (Actor && Actor->ActorHasTag(FName("interst")))
+            {
+                taggedOnes.Add(Actor);
+            }
+        }
+    }
+    
+    int32 maximums =-1;
+
+    for (AActor* Actor : taggedOnes)
+    {
+        int32 currentI=-1;
+        AK7Npc* NPC = Cast<AK7Npc>(Actor);
+        if (NPC) {
+            currentI = NPC->interesting + NPC->GetVelocity().Size()/20+NPC->wirdo;//based on base interst,on velocity if the man around you fly he may take your attetion, and how sus he look (wirdo) also need count how naer you is it.
+            if (NPC->cloth) {
+                AK7ClothBase* fast = NPC->cloth;
+                if (fast->faction == FString("poli")) {
+                    currentI += 20;
+                }
+                else if (fast->faction == FString("milt")) {//not set now not imporntat
+                    currentI += 35;
+                }
+                currentI += fast->blood*5;
+                currentI += fast->holesBreaks * 2.5;
+            }
+            else {
+                currentI += 50; //no cloth it verry intersting
+            }
+            if (NPC->sol <= 1) {
+                currentI += 100;
+            }
+            AK7CombatBase* wNp = Cast<AK7CombatBase>(NPC);
+            if (wNp) {
+                if (wNp->CurrentWeapon) {
+                    currentI += 120;
+                }
+                
+                for (AK7WeaponsBase* w12 : wNp->Inventory) {
+                    if (w12->MeshComponent->GetVisibleFlag()) {
+                        if (w12 != wNp->CurrentWeapon) {
+                            currentI += 70;
+                        }                       
+                    }
+                }
+            }
+        }
+        AK7WeaponsBase* weap = Cast<AK7WeaponsBase>(Actor);
+        if (weap) { 
+            currentI = weap->interesting / chill;
+        }
+        AK7ClothBase* clo = Cast<AK7ClothBase>(Actor);
+        if (clo) {
+            currentI = clo->interesting;
+            if(clo->faction == FString("poli")) {
+                currentI += 50;
+            }else  if(clo->faction == FString("milt")) {
+                currentI += 60;
+            }
+            currentI += clo->blood * 7;
+            currentI += clo->holesBreaks * 3.5;
+        }
+        float dis = FVector::Distance(GetActorLocation(), Actor->GetActorLocation());
+        currentI += (MaxRange - dis) / 5;
+        if (currentI > maximums) {
+            maximums = currentI;
+            mostHave = Actor;
+        }
+    }
+    return mostHave;
 }
 ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn)); // or ECC_WorldDynamic etc.
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn)); 
 
     TArray<AActor*> IgnoredActors;
-    IgnoredActors.Add(this); // Ignore self
+    IgnoredActors.Add(this); // that the npc not watch at him self 
 
     TArray<AActor*> OverlappingActors;
 
-    // 2. Scan in a spherical range
+    // 2. Scan in a spherical range for find object that kind of Characters
     UKismetSystemLibrary::SphereOverlapActors(
         GetWorld(),
         GetActorLocation(),
         MaxRange,
         ObjectTypes,
-        ACharacter::StaticClass(), // Filter by your class
+        ACharacter::StaticClass(), // Filter by Character
         IgnoredActors,
         OverlappingActors
     );
@@ -395,7 +479,7 @@ ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {
     FVector ForwardDir = GetActorForwardVector();
     FVector CurrentLoc = GetActorLocation();
 
-    // 3. Filter by Direction and Find Nearest
+    // 3. Filter by Direction and Find Nearest character
     for (AActor* Actor : OverlappingActors)
     {
         ACharacter* NPC = Cast<ACharacter>(Actor);
@@ -404,7 +488,7 @@ ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {
             FVector DirToNPC = NPC->GetActorLocation() - CurrentLoc;
             float DistanceSquared = DirToNPC.SizeSquared();
 
-            // Skip if it's further away than our current known nearest
+            // Skip if it's further away than our current known nearest basic optimzation
             if (DistanceSquared > NearestDistanceSquared)
             {
                 continue;

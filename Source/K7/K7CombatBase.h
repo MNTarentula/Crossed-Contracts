@@ -15,15 +15,16 @@ class K7_API AK7CombatBase : public AK7Npc
 
 public:
     AK7CombatBase();
-
+    UPROPERTY(BlueprintReadOnly, Category = "Combat Stats")
+    TArray<AK7WeaponsBase*> Inventory;
 protected:
     virtual void BeginPlay() override;
 
     UPROPERTY()
-    TArray<AK7WeaponsBase*> Inventory;
+    
 
     
-    UPROPERTY(BlueprintReadOnly, Category = "Combat Stats")
+    
     FK7RangedWeaponData CurrentRangedData;
     // ************************ reload logic ********************************************
     UPROPERTY(BlueprintReadOnly, Category = "Combat")

@@ -31,13 +31,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloth")
 	USkeletalMesh* ClothMesh = nullptr;
 	
-
+	
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloth")
 	USkeletalMeshComponent* WorldMesh = nullptr;*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloth")
 	UStaticMeshComponent* WorldMesh;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
+	int32 interesting = 2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AK7Npc* own;
 protected:

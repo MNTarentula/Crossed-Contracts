@@ -22,21 +22,26 @@ AK7Npc::AK7Npc()
 	ClothMeshComponent->SetupAttachment(GetMesh());
 }
 
-// Called when the game starts or when spawned
+
 void AK7Npc::BeginPlay()
 {
 	Super::BeginPlay();
+	active = FMath::FRandRange(0.5, 2.5);
+	trust = FMath::FRandRange(0.25, 2.0);
+	chill = FMath::FRandRange(0.5, 1.5); // big more chill smaller more nervus more panic, more panic easier scary.
+	peace = FMath::FRandRange(0.5, 1.5);
+	this->Tags.Add(FName("interst"));
 	ClothMeshComponent->SetLeaderPoseComponent(GetMesh());
 	FVector SpawnLocation = GetActorLocation() + (GetActorForwardVector() * 100.0f); // Spawns 100 units in front
 	FRotator SpawnRotation = GetActorRotation();
 
-	// 3. Configure optional spawn parameters
+	// Configure optional spawn parameters of the cloth
 	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this; // Sets the character as the owner
+	SpawnParams.Owner = this; // Sets the character as the owner of the current cloth
 	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn; // Handles collisions safely
 
-	// 4. Spawn the actor and capture the pointer
+	// Spawn the actor and capture the pointer for later usage.(cloth)
 	cloth = GetWorld()->SpawnActor<AK7ClothBase>(
 		StartClothClass,
 		SpawnLocation,
@@ -46,7 +51,7 @@ void AK7Npc::BeginPlay()
 	wearCurC();
 	
 }
-void AK7Npc::wearCurC() {
+void AK7Npc::wearCurC() {// wear the current cloth (physicliy in game)
 	if (cloth) {
 		ClothMeshComponent->SetSkeletalMesh(cloth->ClothMesh);
 		cloth->AttachToNpc(this);
@@ -62,16 +67,16 @@ void AK7Npc::StartDragging(FName BoneName, FVector StartLocation)
 	USkeletalMeshComponent* MeshComp = GetMesh();
 	if (!MeshComp) return;
 
-	// 1. Ensure capsule is completely ignored by physics so it doesn't get stuck on floors
+	// Ensure capsule is completely ignored by physics so it doesn't get stuck on floors (another safe check for not explode every thing)
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// 2. Ensure Skeletal Mesh is actively simulating physics (Ragdoll Mode)
+	//  Ensure Skeletal Mesh is actively simulating physics (Ragdoll Mode, another safe check for remove possiblite of draging npc that  not dead or uncisos)
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->WakeAllRigidBodies();
 
-	// 3. Grab the specified bone using the handle
+	//  Grab the specified bone using the handle
 	if (PhysicsHandle)
 	{
 		TargetDragLocation = StartLocation;
@@ -101,7 +106,7 @@ void AK7Npc::StopDragging()
 		bIsBeingDragged = false;
 	}
 }
-// Called every frame
+
 void AK7Npc::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -143,13 +148,23 @@ void AK7Npc::Tick(float DeltaTime)
 		UE_LOG(LogTemp, Warning, TEXT("NPC Died - Ragdoll Colliding Properly"));
 	}
 }
-void AK7Npc::getMovedD() {
+void AK7Npc::scaryAdd(float scaryA, int staate) {// staate is just state what to chosse, 0 it damge bassed on chil, trust is 1 and it bassed on trust
+	switch (staate)
+	{
+	case 0: // Damage
+		scary += scaryA / chill;
+		break;
 
+	case 1: // Suspicious person, or suspicons blood on floor,
+		scary += scaryA / trust;
+		break;
+
+	}
 }
-void AK7Npc::getDamgetf(int dmg, const FHitResult& hit) {
-	if (hit.GetActor() != nullptr) {
+void AK7Npc::getDamgetf(int dmg, const FHitResult& hit) {// damge setter for your self, get damge amount, and hit info from where to where and more
+	if (hit.GetActor() != nullptr) {// check for safe not really needed (becuase if hit null how the senter get the actor??(he not))
 		FString Bone = hit.BoneName.ToString();
-		if (Bone == TEXT("head") || Bone == TEXT("neck_01") || Bone == TEXT("neck_02")) {
+		if (Bone == TEXT("head") || Bone == TEXT("neck_01") || Bone == TEXT("neck_02")) {//head shot
 			curHP -= dmg * 2;
 		}
 		else if (Bone == TEXT("spine_01") || Bone == TEXT("spine_02") || Bone == TEXT("spine_03") || Bone == TEXT("spine_04") || Bone == TEXT("spine_05")) {
@@ -158,6 +173,7 @@ void AK7Npc::getDamgetf(int dmg, const FHitResult& hit) {
 		else {
 			curHP -= dmg / 2;
 		}
+		scaryAdd(150, 0);
 		FVector ImpulseDirection = hit.ImpactNormal * -1.0f;
 		if (curHP > 0 && !bDead) {
 			float LaunchPower = 32.0f; 
