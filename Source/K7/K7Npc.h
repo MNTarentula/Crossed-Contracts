@@ -9,6 +9,7 @@
 class UPhysicsHandleComponent;
 class AK7ClothBase;
 class USkeletalMeshComponent;
+class ADmgDealer;
 
 UCLASS()
 class K7_API AK7Npc : public ACharacter
@@ -140,6 +141,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
 	int32 interesting = 3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
+	int32 ObId;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
+	ADmgDealer* manger;
 	/** Updates the destination coordinate while dragging */
 	UFUNCTION(BlueprintCallable, Category = "Movement|Physics")
 	void UpdateDragLocation(FVector NewLocation);

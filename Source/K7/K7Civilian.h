@@ -40,6 +40,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	FTimerHandle ers;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<uint8> idsMem;
+
 	void time();
 	void eers();
 	void Zapoier();

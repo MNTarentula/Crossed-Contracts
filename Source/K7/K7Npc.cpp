@@ -5,6 +5,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "K7ClothBase.h"
 #include "K7clothCivilian.h"
+#include "Kismet/GameplayStatics.h"
+#include "DmgDealer.h"
 // Sets default values
 AK7Npc::AK7Npc()
 {
@@ -31,6 +33,14 @@ void AK7Npc::BeginPlay()
 	chill = FMath::FRandRange(0.5, 1.5); // big more chill smaller more nervus more panic, more panic easier scary.
 	peace = FMath::FRandRange(0.5, 1.5);
 	this->Tags.Add(FName("interst"));
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADmgDealer::StaticClass(), FoundActors);
+
+	if (FoundActors.Num() > 0)
+	{
+		manger = Cast<ADmgDealer>(FoundActors[0]);
+	}
+	manger->regUnObj(this);
 	ClothMeshComponent->SetLeaderPoseComponent(GetMesh());
 	FVector SpawnLocation = GetActorLocation() + (GetActorForwardVector() * 100.0f); // Spawns 100 units in front
 	FRotator SpawnRotation = GetActorRotation();

@@ -3,7 +3,7 @@
 AK7WeaponsBase::AK7WeaponsBase()
 {
 	PrimaryActorTick.bCanEverTick = false; // Saves performance
-	this->Tags.Add(FName("interst"));//it tag mean foucs of the npc can over from one thing to that thing.
+	interesting = 50;
 }
 
 void AK7WeaponsBase::Use()
@@ -17,4 +17,8 @@ AK7WeaponsBase* AK7WeaponsBase::taked()
 	// Default behavior if a child doesn't override it
 	UE_LOG(LogTemp, Warning, TEXT("Base Weapon Used"));
 	return this;
+}
+void AK7WeaponsBase::BeginPlay() {
+	Super::BeginPlay();
+
 }

@@ -15,7 +15,7 @@
 #include <algorithm>
 #include "Kismet/GameplayStatics.h"
 #include "K7WeaponsBase.h"
-
+#include "DmgDealer.h"
 // Sets default values
 AK7Civilian::AK7Civilian()
 {
@@ -57,6 +57,9 @@ void AK7Civilian::BeginPlay()
     for (AActor* Actor : FoundActors)
     {
         Areas.Add(Cast<AATaskArea>(Actor));
+    }
+    if (manger) {
+        idsMem.SetNumZeroed(manger->IDcur);
     }
     
 }
@@ -183,33 +186,19 @@ void AK7Civilian::ft() {// first think it faster then ok happend and it just anl
     int32 RandomNum = FMath::RandRange(1, 100);
     PointB = GetActorLocation();
     float max = 1000.f;
-    if (RandomNum >= 40) {
-        ACharacter* currentC = getNearstNpDir(max, 180.f);
+    
+        AActor* currentC = whatMostInterstT(max, 180.f);
         currekNpc = Cast<AK7Npc>(currentC);
         if (currentC) {
             PointB = currentC->GetActorLocation();
         }
-        else {// take a random point
+        else { // random if nothing intersting got find to watch.
             FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
             float RandomDistance = FMath::FRandRange(0.0f, max);
             float ConeHalfAngleDegrees = 15.0f;
             FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
             PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
         }
-
-    }
-    else if (RandomNum >= 60 && false) {
-        //now it not work becuase i not want add more big function to search object like pistols and cloths on the floor
-    }
-    else {// take a random point, same code two time, but it in development area becuase i do more oop after.
-        FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
-
-
-        float RandomDistance = FMath::FRandRange(0.0f, max);      
-        float ConeHalfAngleDegrees = 15.0f;
-        FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
-        PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
-    }
 
     if (currekNpc) { // it scary part, it just thing bassed on people the npc current look at, if he look at one but he got shoted scary not go up but that gonna be added soon
         int timeScare = currekNpc->wirdo + 0;
@@ -392,9 +381,11 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
 
     for (AActor* Actor : taggedOnes)
     {
+        int32 curId = 0;
         int32 currentI=-1;
         AK7Npc* NPC = Cast<AK7Npc>(Actor);
         if (NPC) {
+            curId = NPC->ObId;
             currentI = NPC->interesting + NPC->GetVelocity().Size()/20+NPC->wirdo;//based on base interst,on velocity if the man around you fly he may take your attetion, and how sus he look (wirdo) also need count how naer you is it.
             if (NPC->cloth) {
                 AK7ClothBase* fast = NPC->cloth;
@@ -430,10 +421,12 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
         }
         AK7WeaponsBase* weap = Cast<AK7WeaponsBase>(Actor);
         if (weap) { 
+            curId = weap->ObId;
             currentI = weap->interesting / chill;
         }
         AK7ClothBase* clo = Cast<AK7ClothBase>(Actor);
         if (clo) {
+            curId = clo->ObId;
             currentI = clo->interesting;
             if(clo->faction == FString("poli")) {
                 currentI += 50;
@@ -445,6 +438,7 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
         }
         float dis = FVector::Distance(GetActorLocation(), Actor->GetActorLocation());
         currentI += (MaxRange - dis) / 5;
+        idsMem[curId] = currentI;
         if (currentI > maximums) {
             maximums = currentI;
             mostHave = Actor;

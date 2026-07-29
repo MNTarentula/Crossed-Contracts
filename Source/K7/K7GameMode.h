@@ -14,6 +14,3 @@ class AK7GameMode : public AGameModeBase
 public:
 	AK7GameMode();
 };
-
-
-

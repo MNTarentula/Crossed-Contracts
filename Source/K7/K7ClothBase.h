@@ -2,7 +2,7 @@
 
 #pragma once
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "K7InterstAct.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "K7ClothBase.generated.h"
@@ -10,7 +10,7 @@
 class AK7Npc;
 
 UCLASS()
-class K7_API AK7ClothBase : public AActor
+class K7_API AK7ClothBase : public AK7InterstAct
 {
 	GENERATED_BODY()
 	
@@ -37,8 +37,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloth")
 	UStaticMeshComponent* WorldMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
-	int32 interesting = 2;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AK7Npc* own;
 protected:
