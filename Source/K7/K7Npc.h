@@ -87,7 +87,9 @@ public:
 	float peace;// how agro or how peacfully he can react 0.5-1.5 (if 0.5 he agro easliy it mean had chance he not run and go to attack you or anyone else)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "bahvior")
 	float trust;
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "bahvior")
+	float dec;//detective, traits it how much he love to invastigate and it acutally change how he do it. 0.5-1.5
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "bahvior")
 	float active;// how speedy he is (how much think per time, how much look around, what speed he moving like he need get fast to safe place or go to sleep after hard work day like that
 	//it current like mood not bahivior if too much scary run it not be small it can be from 0-100 or like that

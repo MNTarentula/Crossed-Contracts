@@ -193,18 +193,30 @@ void AK7Civilian::ft() {// first think it faster then ok happend and it just anl
             PointB = currentC->GetActorLocation();
         }
         else { // random if nothing intersting got find to watch.
-            FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
-            float RandomDistance = FMath::FRandRange(0.0f, max);
-            float ConeHalfAngleDegrees = 15.0f;
-            FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
-            PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
+            AActor* planB = getNearstNpDir(max, 180.f);
+            currekNpc = Cast<AK7Npc>(planB);
+            if (planB) {
+                PointB = planB->GetActorLocation();
+            }
+            else {
+                FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
+                float RandomDistance = FMath::FRandRange(0.0f, max);
+                float ConeHalfAngleDegrees = 15.0f;
+                FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
+                PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
+            }
+            
+            
         }
+    //okay idea is basic as h*** do just like scary grow to interest also based on traits, and do new invstigate emrgnsy in the tick and add a task dec to ok func
 
+    
     if (currekNpc) { // it scary part, it just thing bassed on people the npc current look at, if he look at one but he got shoted scary not go up but that gonna be added soon
         int timeScare = currekNpc->wirdo + 0;
+        int Timeinters = idsMem[currekNpc->ObId] + currekNpc->wirdo/ 2;
 
         AK7CombatBase* cur = Cast<AK7CombatBase>(currekNpc);
-        if (cur) {
+        if (cur) { // need more interst change by cloth but basiclly what now is okay.
             if (cur->CurrentWeapon) {
                 timeScare += 100;
                 if (cur->cloth) {
@@ -224,11 +236,38 @@ void AK7Civilian::ft() {// first think it faster then ok happend and it just anl
                 }
                 else {
                     timeScare += 2;
+                    Timeinters += 60;//if had weapon, and had no cloth what the hell??
                 }
             }
         }
-
+        if (currekNpc->cloth) {
+            // if had cloth basic npc interst grow not had time for that now.
+        }
+        else {
+            Timeinters += 60;// yeah can be count 2 time but if you no cloth and weapon handler ++
+        }
+        interst = Timeinters * dec;
+        if (Timeinters > 100 / dec) {
+            if (dec <= 1.45) {
+                dec += 0.05; // yeah it trait but it mood trait even not dec can be dec in time if he see very many intersting things likeman with pistol withhout cloth and weapons bodies and more
+            }
+        }
         scary += timeScare / trust;
+    }
+    else {
+        if (currentC) {
+            int curId=0;
+            AK7WeaponsBase* weap = Cast<AK7WeaponsBase>(currentC);
+            if (weap) {
+                curId = weap->ObId;
+            }
+            AK7ClothBase* clo = Cast<AK7ClothBase>(currentC);
+            if (clo) {
+                curId = clo->ObId;
+            }
+            interst = idsMem[curId];
+        }
+        
     }
 }
 void AK7Civilian::setter(ETaskType a) {// just a setter of current type of task, not to where go, it set what to do by the input.
@@ -438,11 +477,14 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
         }
         float dis = FVector::Distance(GetActorLocation(), Actor->GetActorLocation());
         currentI += (MaxRange - dis) / 5;
-        idsMem[curId] = currentI;
-        if (currentI > maximums) {
-            maximums = currentI;
-            mostHave = Actor;
+        if (idsMem[curId] >= currentI) {
+            idsMem[curId] = currentI;
+            if (currentI > maximums) {
+                maximums = currentI;
+                mostHave = Actor;
+            }
         }
+        
     }
     return mostHave;
 }
