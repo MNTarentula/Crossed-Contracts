@@ -10,7 +10,7 @@ class UPhysicsHandleComponent;
 class AK7ClothBase;
 class USkeletalMeshComponent;
 class ADmgDealer;
-
+class AK7InterstAct;
 UCLASS()
 class K7_API AK7Npc : public ACharacter
 {
@@ -102,7 +102,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "bahvior")
 	AK7Npc* currekNpc;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "bahvior")
+	AK7InterstAct* currekAct;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 drugstate;// 0 no drag,1 hitman drag,2 civilian drag,3 medic drag,4 combat drag. later add a possiblite of no suspicion drag and skill tree for unlock them.
 

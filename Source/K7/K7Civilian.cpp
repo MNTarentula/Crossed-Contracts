@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "K7WeaponsBase.h"
 #include "DmgDealer.h"
+#include "K7InterstAct.h"
 // Sets default values
 AK7Civilian::AK7Civilian()
 {
@@ -99,15 +100,18 @@ void AK7Civilian::Tick(float DeltaTime)
     {
         ft();
     }
+    
     if (scary > 100 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
-        
+
         if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::Safe) {
             setter(ETaskType::Safe);
 
             i();
         }
+    }else if (interst > 100 && (currekNpc || currekAct) && !investig.Active) {//it interst setter
+        // logic when the civi interst in go to invastigate what is going on here.
+        strInvestg();
     }
-
     
     if (!GetWorldTimerManager().IsTimerActive(tt)) {
         if (curAreaT != nullptr) {
@@ -182,15 +186,18 @@ void AK7Civilian::Zapoier() {// timer setter for the needs.
     );
 }
 void AK7Civilian::ft() {// first think it faster then ok happend and it just anlyze current world around decicde what to look and the emrgnsy fealling not toilet not work, just if scary,ivistigate or take health care.
-
+    currekNpc = nullptr;
+    currekAct = nullptr;
     int32 RandomNum = FMath::RandRange(1, 100);
     PointB = GetActorLocation();
     float max = 1000.f;
     
         AActor* currentC = whatMostInterstT(max, 180.f);
         currekNpc = Cast<AK7Npc>(currentC);
+        currekAct = Cast<AK7InterstAct>(currentC);
         if (currentC) {
             PointB = currentC->GetActorLocation();
+            
         }
         else { // random if nothing intersting got find to watch.
             AActor* planB = getNearstNpDir(max, 180.f);
@@ -456,12 +463,14 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
                         }                       
                     }
                 }
+
             }
         }
         AK7WeaponsBase* weap = Cast<AK7WeaponsBase>(Actor);
         if (weap) { 
             curId = weap->ObId;
             currentI = weap->interesting / chill;
+            
         }
         AK7ClothBase* clo = Cast<AK7ClothBase>(Actor);
         if (clo) {
@@ -548,4 +557,200 @@ ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {
     return NearestNPC;
 }
 
+//************************************************ invastigate functions ***************************************************************
 
+void AK7Civilian::strInvestg() {//it called in tick when trsh hold over, it start the actions of invastigate 
+    investig = FInvestigationContext();
+    investig.Active = true;
+    if (IsValid(currekNpc)) {
+        investig.TriggerActor = currekNpc;
+    }
+    else if (IsValid(currekAct)) {
+        investig.TriggerActor = currekAct;
+    }
+    if (investig.TriggerActor) {
+        investig.SceneCenter = investig.TriggerActor->GetActorLocation();
+        investig.timeOfInvest = GetWorld()->GetTimeSeconds();
+        investig.evidAct.Add(investig.TriggerActor);
+        investig.timeEvidFind.Add(investig.timeOfInvest);
+        investig.InterStats = interst;
+    }
+
+    decInvestAc();
+}
+
+
+void AK7Civilian::updInvestg() {
+    // it currently full useless
+    bool check = true;
+    if (IsValid(currekNpc)) {
+        for (AActor*& np : investig.evidAct)
+        {
+            if (np == currekNpc) {
+                check = false;
+                break;
+            }
+        }
+        if (check) {
+            investig.evidAct.Add(currekNpc);
+            investig.timeEvidFind.Add(GetWorld()->GetTimeSeconds());
+            investig.InterStats += interst / 2;
+            investig.locationsFi.Add(currekNpc->GetActorLocation());
+            decInvestAc();
+        }
+    }
+    else if (IsValid(currekAct)) {
+        for (AActor*& np : investig.evidAct)
+        {
+            if (np == currekAct) {
+                check = false;
+                break;
+            }
+        }
+        if (check) {
+            investig.evidAct.Add(currekAct);
+            investig.timeEvidFind.Add(GetWorld()->GetTimeSeconds());
+            investig.InterStats += interst / 2;
+            investig.locationsFi.Add(currekAct->GetActorLocation());
+            decInvestAc();
+        }
+        
+    }
+}
+
+
+void AK7Civilian::decInvestAc() {
+    const int32 Count = investig.evidAct.Num();
+    if (Count == 0)
+    {
+        CurInvesActi = EInvestigationAction::LookAround;
+        return;
+    }
+
+    const float Now = GetWorld()->GetTimeSeconds();
+
+    float SequenceScore = 0.f;
+    float DangerScore = 0.f;
+    float HelpScore = 0.f;
+    float SuspicionScore = 0.f;
+
+    for (int32 i = 0; i < Count; ++i)
+    {
+        AActor* Ev = investig.evidAct[i];
+        if (!IsValid(Ev))
+        {
+            continue;
+        }
+
+        const float FoundTime = investig.timeEvidFind.IsValidIndex(i)
+            ? investig.timeEvidFind[i]
+            : Now;
+
+            const FVector FoundLoc = investig.locationsFi.IsValidIndex(i)
+                ? investig.locationsFi[i]
+                : Ev->GetActorLocation();
+
+                const float Age = Now - FoundTime;
+                const float DistFromScene = FVector::Dist(FoundLoc, investig.SceneCenter);
+
+                // older from found time evidence matters less
+                float AgeWeight = 1.f;
+                if (Age > 60.f) AgeWeight = 0.4f;
+                else if (Age > 30.f) AgeWeight = 0.6f;
+                else if (Age > 10.f) AgeWeight = 0.8f;
+
+                // far away evidence matters less
+                float DistWeight = 1.f;
+                if (DistFromScene > 1000.f) DistWeight = 0.2f;
+                else if (DistFromScene > 300.f) DistWeight = 0.5f;
+                else if (DistFromScene > 100.f) DistWeight = 0.8f;
+
+                float Score = AgeWeight * DistWeight * 10.f;
+                SequenceScore += Score;
+
+                if (Cast<AK7WeaponsBase>(Ev))
+                {
+                    SuspicionScore += 18.f * AgeWeight * DistWeight;
+                }
+                else if (Cast<AK7ClothBase>(Ev))
+                {
+                    AK7ClothBase* Clo = Cast<AK7ClothBase>(Ev);
+                    if (Clo)
+                    {
+                        if (Clo->blood > 0) DangerScore += 10.f * AgeWeight;
+                        if (Clo->holesBreaks > 0) SuspicionScore += 8.f * AgeWeight;
+                        if (Clo->faction == FString("poli")) { HelpScore += 6.f * AgeWeight; }
+                        else if (Clo->faction == FString("milt")) { DangerScore += 4.f * AgeWeight; }
+                        else {
+                            SuspicionScore += 8.f * AgeWeight * DistWeight;
+                        }
+                    }
+                }
+                else if (Cast<AK7Npc>(Ev))
+                {
+                    AK7Npc* N = Cast<AK7Npc>(Ev);
+                    if (N)
+                    {
+                        
+                        if (N->sol == 1) { HelpScore += 15.f * AgeWeight; }//no sense
+                        else if (N->sol == 0) { SuspicionScore += 15.f * AgeWeight;HelpScore += 15.f * AgeWeight;}// dead
+                        else if(N->sol < 4){ HelpScore += 5.f * AgeWeight; }// injured but had sense
+                        SuspicionScore += N->wirdo * AgeWeight;
+                        if (N->GetVelocity().Size() > 400.f) SuspicionScore += 12.f * AgeWeight;// mean he prety fast, it not good becuase it now it mean wwhat that in that moment he may stand and not had velocity bad.
+                    }
+                }
+
+                if (Ev == investig.TriggerActor)
+                {
+                    SequenceScore += 15.f;
+                }
+    }
+
+    investig.Suspicion = SuspicionScore;
+    investig.MedicalConcern = HelpScore;
+    investig.Danger = DangerScore;
+
+    // final decision
+    if (investig.Danger > 100.f * chill)
+    {
+        CurInvesActi = EInvestigationAction::LeaveScene;
+        return;
+    }
+
+    if (investig.MedicalConcern > 25.f && investig.Suspicion < 20.f)
+    {
+        CurInvesActi = (dec < 0.8f) ? EInvestigationAction::HelpPerson : EInvestigationAction::Approach;
+        return;
+    }
+
+    if (investig.Suspicion > 30.f)
+    {
+        if (dec >= 1.2f)
+        {
+            CurInvesActi = EInvestigationAction::LookAround;
+            return;
+        }
+
+        if (chill < 0.7f)
+        {
+            CurInvesActi = EInvestigationAction::KeepDistance;
+            return;
+        }
+
+        CurInvesActi = EInvestigationAction::AskPerson;
+        return;
+    }
+
+    if (SequenceScore > 40.f)
+    {
+        CurInvesActi = EInvestigationAction::LookAround;
+        return;
+    }
+
+    CurInvesActi = EInvestigationAction::Approach;
+
+}
+
+void AK7Civilian::endInvestg() {
+
+}

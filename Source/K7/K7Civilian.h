@@ -9,6 +9,38 @@
 
 class AATaskArea;
 class AAIController;
+enum class EInvestigationAction : uint8
+{
+	None,
+	LookAround,
+	Approach,
+	AskPerson,
+	HelpPerson,
+	FindHelp,
+	KeepDistance,
+	FollowPerson,
+	LeaveScene
+};
+struct FInvestigationContext
+{
+	bool Active = false;
+	float InterStats = 0.f;
+	FVector SceneCenter;
+	AActor* TriggerActor = nullptr;
+	float timeOfInvest = 0.f;
+	TArray<AActor*> evidAct;
+	TArray<float> timeEvidFind;
+	TArray<FVector> locationsFi;
+	float Suspicion = 0.f;
+	float MedicalConcern = 0.f;
+	float Danger = 0.f;
+
+	bool SawBody = false;
+	bool SawWeapon = false;
+	bool HeardHelp = false;
+	bool SawRunningPerson = false;
+};
+
 UCLASS()
 class K7_API AK7Civilian : public AK7Npc
 {
@@ -28,6 +60,13 @@ protected:
 	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);
 	FVector PointB;
 	int workspace;
+	//invastigation fundation
+	FInvestigationContext investig;
+	EInvestigationAction CurInvesActi;
+	void strInvestg();
+	void updInvestg(); 
+	void decInvestAc();
+	void endInvestg();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
