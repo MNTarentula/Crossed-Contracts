@@ -27,6 +27,7 @@ struct FInvestigationContext
 	float InterStats = 0.f;
 	FVector SceneCenter;
 	AActor* TriggerActor = nullptr;
+	AK7Npc* curSuspect = nullptr;
 	float timeOfInvest = 0.f;
 	TArray<AActor*> evidAct;
 	TArray<float> timeEvidFind;
