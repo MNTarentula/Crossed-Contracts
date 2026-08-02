@@ -1190,6 +1190,124 @@ void AK7Civilian::decInvestAc() {
     investig.MedicalConcern = HelpScore;
     investig.Danger = DangerScore;
 
+    // since dec is 0.5-1.5 we dp split to five ifs low dec, low normal, normal, more dec then norm and high dec
+    // and how panic or chill he is 0.5-1.5 
+    if (dec < 0.75) {
+        if (chill < 0.75) {// parnoia man. no logic only scare.
+            if (investig.Danger > 37) {
+                CurInvesActi = EInvestigationAction::LeaveScene;
+                return;
+            }
+            if (curTri == 7 && triSucs > 25 && triSucs < 60)
+            {
+                CurInvesActi = EInvestigationAction::LookAround;
+                return;
+            }
+            
+            if (curTri == 9 && triSucs > 25) {
+               CurInvesActi = EInvestigationAction::FindHelp;
+               return;
+            }
+
+            if (investig.MedicalConcern > 37) {
+                if (curTri == 7 || curTri == 4 || curTri == 9) {
+                    CurInvesActi = EInvestigationAction::FindHelp;
+                    return;
+                }
+                else if (investig.Suspicion > 28) {
+                    CurInvesActi = EInvestigationAction::LookAround;
+                    return;
+                }
+                if (investig.Danger > 27) {
+                    CurInvesActi = EInvestigationAction::LeaveScene;
+                    return;
+                }
+                CurInvesActi = EInvestigationAction::FindHelp;
+            }
+            if (curTri == 4) {
+                CurInvesActi = EInvestigationAction::FollowPerson;
+                return;
+            }
+            CurInvesActi = EInvestigationAction::LeaveScene;
+            return;
+        }
+        else if (chill < 1.25) {
+
+        }
+        else {
+            if (curTri == 9 && triSucs > 95) {
+                CurInvesActi = EInvestigationAction::FindHelp;
+                return;
+            }
+            if (curTri == 9 && triSucs > 65) {
+                CurInvesActi = EInvestigationAction::AskPerson;
+                return;
+            }
+            if (curTri == 9 && triSucs > 25) {
+                CurInvesActi = EInvestigationAction::Approach;
+                return;
+            }
+            if (investig.Danger > 70) {
+                CurInvesActi = EInvestigationAction::FindHelp;
+                return;
+            }
+            if (investig.MedicalConcern > 37) {
+                CurInvesActi = EInvestigationAction::HelpPerson;
+                return;
+            }
+            if (curTri == 7 && triSucs > 25) {
+                CurInvesActi = EInvestigationAction::FindHelp;
+                return;
+            }
+            CurInvesActi = EInvestigationAction::Approach;
+            return;
+        }
+
+    }
+    else if (dec < 0.9) {
+        if (chill < 0.75) {
+
+        }
+        else if (chill < 1.25) {
+
+        }
+        else {
+
+        }
+    }
+    else if (dec < 1.1) {
+        if (chill < 0.75) {
+
+        }
+        else if (chill < 1.25) {
+
+        }
+        else {
+
+        }
+    }
+    else if (dec < 1.35) {
+        if (chill < 0.75) {
+
+        }
+        else if (chill < 1.25) {
+
+        }
+        else {
+
+        }
+    }
+    else {
+        if (chill < 0.75) {
+
+        }
+        else if (chill < 1.25) {
+
+        }
+        else {
+
+        }
+    }
     // Final theory reaction not ready, prototype
     if (curTri == 9 && triSucs > 80)
     {
