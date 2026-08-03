@@ -581,7 +581,7 @@ void AK7Civilian::strInvestg() {//it called in tick when trsh hold over, it star
 
 
 void AK7Civilian::updInvestg() {
-    // it currently full useless
+    // it currently full upd
     bool check = true;
     if (IsValid(currekNpc)) {
         for (AActor*& np : investig.evidAct)
@@ -617,7 +617,35 @@ void AK7Civilian::updInvestg() {
         
     }
 }
+void AK7Civilian::updTheo(int32 sucs,int32 tri) {
 
+    if (tri == 0 || sucs == 0)
+    {
+        return;
+    }
+
+    if (investig.curTri == 0)
+    {
+        investig.curTri = tri;
+        investig.triSucs = sucs;
+        return;
+    }
+
+    if (investig.curTri == tri)
+    {
+        investig.triSucs += sucs;
+    }
+    else if (sucs > investig.triSucs)
+    {
+        investig.curTri = tri;
+        investig.triSucs = sucs;
+    }
+    else
+    {
+        investig.triSucs -= sucs / 3;
+    }
+
+}
 
 void AK7Civilian::decInvestAc() {
     const int32 Count = investig.evidAct.Num();
@@ -633,10 +661,10 @@ void AK7Civilian::decInvestAc() {
     float DangerScore = 0.f;
     float HelpScore = 0.f;
     float SuspicionScore = 0.f;
-    int32 firTri = 0;// 1 it be dead or no sense,2 pistol on floor,3 injured or crawling, 4 suspicons man, 5 strange sound, 6 draged man,7 possible murder, 8 possible stealing of cloth, 9 the suspect is murder!
+    // 1 it be dead or no sense,2 pistol on floor,3 injured or crawling, 4 suspicons man, 5 strange sound, 6 draged man,7 possible murder, 8 possible stealing of cloth, 9 the suspect is murder!
     int32 curTri = 0; // same as fir but current and not started teahory randlor intagrated
     int32 triSucs = 0;// 0-100 it how he sure he right if he be sure more then 90 changes by dec and chill
-    for (int32 i = 0; i < Count; ++i)
+    for (int32 i = investig.xue; i < Count; ++i)
     {
         AActor* Ev = investig.evidAct[i];
         if (!IsValid(Ev))
@@ -674,7 +702,7 @@ void AK7Civilian::decInvestAc() {
 
                 if (N->sol <= 1)
                 {
-                    firTri = 1;
+                    investig.firTri = 1;
 
                     HelpScore += 15.f;
                     SuspicionScore += 15.f;
@@ -682,14 +710,14 @@ void AK7Civilian::decInvestAc() {
                     // A moving unconscious/dead actor may mean dragging or physics movement. 
                     if (Speed > 80.f)
                     {
-                        firTri = 6;
+                        investig.firTri = 6;
                         SuspicionScore += 25.f;
                         DangerScore += 8.f;
                         triSucs += 15;
                     }
                     int32 diff = FVector::Dist(N->GetActorLocation(), investig.SceneCenter);;
                     if (diff > 9) { //another check that it moved. or dragged from a place that he was found.
-                        firTri = 6;
+                        investig.firTri = 6;
                         SuspicionScore += 25.f;
                         DangerScore += 8.f;
 
@@ -698,7 +726,7 @@ void AK7Civilian::decInvestAc() {
                 }
                 else if (N->sol < 4)
                 {
-                    firTri = 3;
+                    investig.firTri = 3;
 
                     HelpScore += 17.f;
                     SuspicionScore += 18.f;
@@ -711,7 +739,7 @@ void AK7Civilian::decInvestAc() {
                     }
                     if (N->wirdo + idsMem[N->ObId] / 2.f >= 100.f * trust) {
                         investig.curSuspect = N;
-                        firTri = 4;
+                        investig.firTri = 4;
                         SuspicionScore += N->wirdo;
                         SuspicionScore += idsMem[N->ObId] / 2.f;
                         if (Speed > 400.f)
@@ -724,7 +752,7 @@ void AK7Civilian::decInvestAc() {
                 }
 
                 investig.curSuspect = N;
-                firTri = 4;
+                investig.firTri = 4;
 
                 SuspicionScore += N->wirdo;
                 SuspicionScore += idsMem[N->ObId] / 2.f;
@@ -745,7 +773,7 @@ void AK7Civilian::decInvestAc() {
 
             if (AK7WeaponsBase* Weapon = Cast<AK7WeaponsBase>(Ev))
             {
-                firTri = 2;
+                investig.firTri = 2;
 
                 SuspicionScore += 60.f;
                 DangerScore += 10.f;
@@ -758,7 +786,7 @@ void AK7Civilian::decInvestAc() {
             {
                 if (Clo->blood > 0)
                 {
-                    firTri = 7;
+                    investig.firTri = 7;
 
                     SuspicionScore += 70.f;
                     DangerScore += 8.f;
@@ -796,9 +824,9 @@ void AK7Civilian::decInvestAc() {
                     }
                 }
 
-                if (firTri == 0)
+                if (investig.firTri == 0)
                 {
-                    firTri = 8;// possible stealing of cloths
+                    investig.firTri = 8;// possible stealing of cloths
                     SuspicionScore += 6.f;
                 }
 
@@ -817,7 +845,7 @@ void AK7Civilian::decInvestAc() {
                     SuspicionScore += 15.f * AgeWeight;
                 }
 
-                if (firTri == 1 || firTri == 3 || firTri == 6 || firTri == 7)
+                if (investig.firTri == 1 || investig.firTri == 3 || investig.firTri == 6 || investig.firTri == 7)
                 {
                     curTri = 7;
 
@@ -838,7 +866,7 @@ void AK7Civilian::decInvestAc() {
                         triSucs -= 15;
                     }
                 }
-                else if (firTri == 4)
+                else if (investig.firTri == 4)
                 {
                     curTri = 9;
 
@@ -854,7 +882,7 @@ void AK7Civilian::decInvestAc() {
                         triSucs -= 45 * AgeWeight;
                     }
                 }
-                else if (firTri == 8)
+                else if (investig.firTri == 8)
                 {
                     // Abandoned clothing followed by a weapon can mean disguise after violence.
                     curTri = 7;
@@ -871,7 +899,7 @@ void AK7Civilian::decInvestAc() {
                 const bool IsDamaged = Clo->holesBreaks > 0;
                 const bool IsAuthorityCloth = Clo->faction == FString("poli") || Clo->faction == FString("milt");
 
-                if (firTri == 7 || firTri == 1 || firTri == 3 || firTri == 6)
+                if (investig.firTri == 7 || investig.firTri == 1 || investig.firTri == 3 || investig.firTri == 6)
                 {
                     if (HasBlood)
                     {
@@ -903,7 +931,7 @@ void AK7Civilian::decInvestAc() {
                     }
                 }
 
-                if (firTri == 4)
+                if (investig.firTri == 4)
                 {
                     if (HasBlood)
                     {
@@ -924,7 +952,7 @@ void AK7Civilian::decInvestAc() {
                     }
                 }
 
-                if (firTri == 8)
+                if (investig.firTri == 8)
                 {
                     // More abandoned clothing supports theft/disguise theory.
                     curTri = 8;
@@ -988,7 +1016,7 @@ void AK7Civilian::decInvestAc() {
                 const bool IsRunning = Speed > 400.f;
                 const bool IsMovingFast = Speed > 250.f;
 
-                if (firTri == 7 || firTri == 1 || firTri == 3 || firTri == 6)
+                if (investig.firTri == 7 || investig.firTri == 1 || investig.firTri == 3 || investig.firTri == 6)
                 {
                     if (N->sol > 1)
                     {
@@ -1047,7 +1075,7 @@ void AK7Civilian::decInvestAc() {
                             triSucs += 25;
                         }
                         if (curTri == 0) {
-                            curTri = firTri;
+                            curTri = investig.firTri;
                             SuspicionScore -= triSucs / 10.f;
                             triSucs -= 5.f;
                         }
@@ -1078,7 +1106,7 @@ void AK7Civilian::decInvestAc() {
                         
 
                         // Multiple victims strongly support an attack/murder theory.
-                        if (firTri == 1 || firTri == 3)
+                        if (investig.firTri == 1 || investig.firTri == 3)
                         {
                             SuspicionScore += 35.f * EvidenceWeight;
                             DangerScore += 15.f * EvidenceWeight;
@@ -1102,7 +1130,7 @@ void AK7Civilian::decInvestAc() {
                     }
                 }
 
-                if (firTri == 4)
+                if (investig.firTri == 4)
                 {
                     if (investig.curSuspect == N)
                     {
@@ -1116,7 +1144,7 @@ void AK7Civilian::decInvestAc() {
                             triSucs += 15;
                         }
                     }
-                    else if (N->wirdo > investig.curSuspect->wirdo && IsNearTrigger)
+                    else if (IsValid(investig.curSuspect) && N->wirdo > investig.curSuspect->wirdo && IsNearTrigger)
                     {
                         // another person may be a more sus suspect.
                         investig.curSuspect = N;
@@ -1125,7 +1153,7 @@ void AK7Civilian::decInvestAc() {
                     }
                 }
 
-                if (firTri == 8)
+                if (investig.firTri == 8)
                 {
                     // Person Near abandoned clothes may own them, steal them, or change disguise.
                     if (IsNearTrigger)
@@ -1173,7 +1201,7 @@ void AK7Civilian::decInvestAc() {
                 if (N->sol == 4 &&
                     Speed < 100.f &&
                     N->wirdo < 10.f &&
-                    firTri == 3)
+                    investig.firTri == 3)
                 {
                     HelpScore += 5.f * EvidenceWeight;
                     SuspicionScore -= 4.f * EvidenceWeight;
@@ -1185,22 +1213,30 @@ void AK7Civilian::decInvestAc() {
         }
 
     }
-
-    investig.Suspicion = SuspicionScore;
-    investig.MedicalConcern = HelpScore;
-    investig.Danger = DangerScore;
+    investig.xue = Count;
+    updTheo(triSucs, curTri);
+    investig.Suspicion += SuspicionScore;
+    investig.MedicalConcern += HelpScore;
+    investig.Danger += DangerScore;
 
     // since dec is 0.5-1.5 we dp split to five ifs low dec, low normal, normal, more dec then norm and high dec
     // and how panic or chill he is 0.5-1.5 
     if (dec < 0.75) {
         if (chill < 0.75) {// parnoia man. no logic only scare.
             if (investig.Danger > 37) {
+                
                 CurInvesActi = EInvestigationAction::LeaveScene;
                 return;
             }
             if (curTri == 7 && triSucs > 25 && triSucs < 60)
             {
-                CurInvesActi = EInvestigationAction::LookAround;
+                if (PrevInvesActi == EInvestigationAction::LookAround) {
+                    CurInvesActi = EInvestigationAction::FindHelp;
+                }
+                else {
+                    CurInvesActi = EInvestigationAction::LookAround;
+                }
+                
                 return;
             }
             
@@ -1215,7 +1251,13 @@ void AK7Civilian::decInvestAc() {
                     return;
                 }
                 else if (investig.Suspicion > 28) {
-                    CurInvesActi = EInvestigationAction::LookAround;
+
+                    if (PrevInvesActi == EInvestigationAction::LookAround) {
+                        CurInvesActi = EInvestigationAction::FindHelp;
+                    }
+                    else {
+                        CurInvesActi = EInvestigationAction::LookAround;
+                    }
                     return;
                 }
                 if (investig.Danger > 27) {
@@ -1225,10 +1267,14 @@ void AK7Civilian::decInvestAc() {
                 CurInvesActi = EInvestigationAction::FindHelp;
             }
             if (curTri == 4) {
-                CurInvesActi = EInvestigationAction::FollowPerson;
+                if (PrevInvesActi == EInvestigationAction::FollowPerson) {
+                    CurInvesActi = EInvestigationAction::FindHelp;
+                }
+                else {
+                    CurInvesActi = EInvestigationAction::FollowPerson;
+                }
                 return;
             }
-            CurInvesActi = EInvestigationAction::LeaveScene;
             return;
         }
         else if (chill < 1.25) {
@@ -1240,11 +1286,27 @@ void AK7Civilian::decInvestAc() {
                 return;
             }
             if (curTri == 9 && triSucs > 65) {
-                CurInvesActi = EInvestigationAction::AskPerson;
+                if (PrevInvesActi == EInvestigationAction::AskPerson) {
+                    CurInvesActi = EInvestigationAction::FindHelp;// that also need change by the answer of the man but now it not count and not mean so like that.
+                }
+                else {
+                    CurInvesActi = EInvestigationAction::AskPerson;
+                }
                 return;
             }
             if (curTri == 9 && triSucs > 25) {
-                CurInvesActi = EInvestigationAction::Approach;
+                if (PrevInvesActi == EInvestigationAction::FollowPerson)
+                {
+                    CurInvesActi = EInvestigationAction::FindHelp;
+                }
+                else if (PrevInvesActi == EInvestigationAction::Approach)
+                {
+                    CurInvesActi = EInvestigationAction::FollowPerson;
+                }
+                else
+                {
+                    CurInvesActi = EInvestigationAction::Approach;
+                }
                 return;
             }
             if (investig.Danger > 70) {
@@ -1259,7 +1321,12 @@ void AK7Civilian::decInvestAc() {
                 CurInvesActi = EInvestigationAction::FindHelp;
                 return;
             }
-            CurInvesActi = EInvestigationAction::Approach;
+            if (PrevInvesActi == EInvestigationAction::Approach) {
+                CurInvesActi = EInvestigationAction::LeaveScene;
+            }
+            else {
+                CurInvesActi = EInvestigationAction::Approach;
+            }
             return;
         }
 
@@ -1308,64 +1375,7 @@ void AK7Civilian::decInvestAc() {
 
         }
     }
-    // Final theory reaction not ready, prototype
-    if (curTri == 9 && triSucs > 80)
-    {
-        // Very confident we found the murderer/suspect
-        CurInvesActi = EInvestigationAction::AskPerson;
-        return;
-    }
-
-    if (curTri == 7 && triSucs > 50)
-    {
-        // Strong murder theory but no confirmed suspect
-        CurInvesActi = EInvestigationAction::LookAround;
-        return;
-    }
-
-    // Danger has priority
-    if (investig.Danger > 100.f * chill)
-    {
-        CurInvesActi = EInvestigationAction::LeaveScene;
-        return;
-    }
-
-    // Medical situation
-    if (investig.MedicalConcern > 25.f && investig.Suspicion < 20.f)
-    {
-        CurInvesActi = (dec < 0.8f)
-            ? EInvestigationAction::HelpPerson
-            : EInvestigationAction::Approach;
-
-        return;
-    }
-
-    // Suspicious but not enough proof
-    if (investig.Suspicion > 30.f)
-    {
-        if (dec >= 1.2f)
-        {
-            CurInvesActi = EInvestigationAction::LookAround;
-            return;
-        }
-
-        if (chill < 0.7f)
-        {
-            CurInvesActi = EInvestigationAction::KeepDistance;
-            return;
-        }
-
-        CurInvesActi = EInvestigationAction::AskPerson;
-        return;
-    }
-
-    // Evidence exists but no strong theory
-    if (SequenceScore > 40.f)
-    {
-        CurInvesActi = EInvestigationAction::LookAround;
-        return;
-    }
-
+    
     CurInvesActi = EInvestigationAction::Approach;
 
 }

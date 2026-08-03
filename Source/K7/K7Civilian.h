@@ -36,6 +36,11 @@ struct FInvestigationContext
 	float MedicalConcern = 0.f;
 	float Danger = 0.f;
 
+	int32 firTri = 0;// 1 it be dead or no sense,2 pistol on floor,3 injured or crawling, 4 suspicons man, 5 strange sound, 6 draged man,7 possible murder, 8 possible stealing of cloth, 9 the suspect is murder!
+	int32 curTri = 0; // same as fir but current and not started teahory randlor intagrated
+	int32 triSucs = 0;// 0-100 it how he sure he right if he be sure more then 90 changes by dec and chill
+	int32 xue = 0;
+
 	bool SawBody = false;
 	bool SawWeapon = false;
 	bool HeardHelp = false;
@@ -63,9 +68,11 @@ protected:
 	int workspace;
 	//invastigation fundation
 	FInvestigationContext investig;
-	EInvestigationAction CurInvesActi;
+	EInvestigationAction CurInvesActi = EInvestigationAction::None;
+	EInvestigationAction PrevInvesActi = EInvestigationAction::None;
 	void strInvestg();
 	void updInvestg(); 
+	void updTheo(int32 triSucs,int32 curTri);
 	void decInvestAc();
 	void endInvestg();
 public:	
