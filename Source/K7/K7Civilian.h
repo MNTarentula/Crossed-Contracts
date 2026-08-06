@@ -73,13 +73,16 @@ protected:
 	void strInvestg();
 	void updInvestg(); 
 	void updTheo(int32 triSucs,int32 curTri);
+	void excuter();
 	void decInvestAc();
 	void endInvestg();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	UPROPERTY(BlueprintReadOnly, Category = "ft")
 	FTimerHandle tim;
+	UPROPERTY(BlueprintReadOnly, Category = "invest ft")
+	FTimerHandle invTim;
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	FTimerHandle zapoi;
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")

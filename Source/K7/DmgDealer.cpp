@@ -21,10 +21,14 @@ void ADmgDealer::BeginPlay()
 }
 void ADmgDealer::regUnObj(AActor* a)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Manager: %p"), this);
+	UE_LOG(LogTemp, Warning, TEXT("Actor: %p"), a);
+	
 	if (!a) { return; }
 
 	if (!a->ActorHasTag(FName("interst"))) { return; }
 	AK7InterstAct* b = Cast<AK7InterstAct>(a);
+	UE_LOG(LogTemp, Warning, TEXT("Cast: %p"), b);
 	if (b) {
 		b->ObId = IDcur;
 	}

@@ -17,7 +17,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
 	int32 interesting;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
-	int32 ObId;
+	uint8 ObId;
 	ADmgDealer* manger;
 protected:
 	// Called when the game starts or when spawned

@@ -24,7 +24,10 @@ void AK7InterstAct::BeginPlay()
 	{
 		manger = Cast<ADmgDealer>(FoundActors[0]);
 	}
-	manger->regUnObj(this);
+	if (manger) {
+		manger->regUnObj(this);
+	}
+	
 }
 
 // Called every frame

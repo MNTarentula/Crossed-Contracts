@@ -15,7 +15,7 @@ public:
 	// Sets default values for this actor's properties
 	ADmgDealer();
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	int32 IDcur;
+	uint8 IDcur;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	TArray<AActor*> regOb;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)

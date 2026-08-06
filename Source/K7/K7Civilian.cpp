@@ -101,14 +101,14 @@ void AK7Civilian::Tick(float DeltaTime)
         ft();
     }
     
-    if (scary > 100 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
+    if (scary > 300 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
 
         if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::Safe) {
             setter(ETaskType::Safe);
 
             i();
         }
-    }else if (interst > 100 && (currekNpc || currekAct) && !investig.Active) {//it interst setter
+    }else if (interst > 80 && (currekNpc || currekAct) && !investig.Active) {//it interst setter
         // logic when the civi interst in go to invastigate what is going on here.
         strInvestg();
     }
@@ -188,6 +188,7 @@ void AK7Civilian::Zapoier() {// timer setter for the needs.
 void AK7Civilian::ft() {// first think it faster then ok happend and it just anlyze current world around decicde what to look and the emrgnsy fealling not toilet not work, just if scary,ivistigate or take health care.
     currekNpc = nullptr;
     currekAct = nullptr;
+    UE_LOG(LogTemp, Warning, TEXT("ft() called and the time is %f"), GetWorld()->GetTimeSeconds());
     int32 RandomNum = FMath::RandRange(1, 100);
     PointB = GetActorLocation();
     float max = 1000.f;
@@ -432,6 +433,7 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
         AK7Npc* NPC = Cast<AK7Npc>(Actor);
         if (NPC) {
             curId = NPC->ObId;
+            UE_LOG(LogTemp, Warning, TEXT("cur id is: %d"),curId);
             currentI = NPC->interesting + NPC->GetVelocity().Size()/20+NPC->wirdo;//based on base interst,on velocity if the man around you fly he may take your attetion, and how sus he look (wirdo) also need count how naer you is it.
             if (NPC->cloth) {
                 AK7ClothBase* fast = NPC->cloth;
@@ -470,11 +472,12 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
         if (weap) { 
             curId = weap->ObId;
             currentI = weap->interesting / chill;
-            
+            UE_LOG(LogTemp, Warning, TEXT("cur id is: %d"), curId);
         }
         AK7ClothBase* clo = Cast<AK7ClothBase>(Actor);
         if (clo) {
             curId = clo->ObId;
+            UE_LOG(LogTemp, Warning, TEXT("cur id is: %d"), curId);
             currentI = clo->interesting;
             if(clo->faction == FString("poli")) {
                 currentI += 50;
@@ -486,7 +489,8 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
         }
         float dis = FVector::Distance(GetActorLocation(), Actor->GetActorLocation());
         currentI += (MaxRange - dis) / 5;
-        if (idsMem[curId] >= currentI) {
+        UE_LOG(LogTemp, Warning, TEXT("cur interst is: %d"), currentI);
+        if (idsMem[curId] <= currentI ) {
             idsMem[curId] = currentI;
             if (currentI > maximums) {
                 maximums = currentI;
@@ -1380,6 +1384,49 @@ void AK7Civilian::decInvestAc() {
 
 }
 
+void AK7Civilian::excuter() {
+    GetWorldTimerManager().ClearTimer(invTim);
+    switch (CurInvesActi)
+    {
+    case EInvestigationAction::LookAround:
+
+        GetWorldTimerManager().SetTimer(
+            invTim,
+            this,
+            &AK7Civilian::ft,
+            0.2f, 
+            true
+        );
+        break;
+
+    case EInvestigationAction::FollowPerson:
+        PointB = investig.curSuspect->GetActorLocation(); // o nopt check the curssupect if nulll becuase before we call excuter that for set the current to floow need cur suspect not be null
+        randomP(PointB); // for now it only follow like that but idk, 
+        break;
+
+    case EInvestigationAction::FindHelp:
+        
+        break;
+
+    case EInvestigationAction::LeaveScene:
+        endInvestg();
+        break;
+
+    case EInvestigationAction::HelpPerson:
+        PointB = investig.SceneCenter;
+        randomP(PointB);
+        break;
+
+    case EInvestigationAction::Approach:
+        break;
+    case EInvestigationAction::KeepDistance:
+        break;
+    case EInvestigationAction::AskPerson:
+        break;
+    case EInvestigationAction::None:
+        break;
+    }
+}
 void AK7Civilian::endInvestg() {
 
 }
