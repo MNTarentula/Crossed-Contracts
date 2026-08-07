@@ -83,6 +83,7 @@ void AK7Civilian::randomP(const FVector& Target)
     
     if (bFound)
     {
+        NoButI = true;
         PointB = NavPoint.Location;
 
         AICon->MoveToLocation(PointB);
@@ -98,6 +99,7 @@ void AK7Civilian::Tick(float DeltaTime)
 
     if (Dist < 50.f && (curAreaT == nullptr || curAreaT->TaskType == ETaskType::None))// if not had a task just not stop wander and find new thing to look at
     {
+        NoButI = false;
         ft();
     }
     
@@ -139,7 +141,9 @@ void AK7Civilian::Tick(float DeltaTime)
         }
         
     }
-    
+    if ((curAreaT == nullptr || curAreaT->TaskType == ETaskType::None ) && !NoButI) {
+        randomP(PointB);
+    }
     FRotator TargetRotation =(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(),PointB)- GetActorRotation()).GetNormalized();
     if (currekNpc) {
         TargetRotation = (UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), currekNpc->GetActorLocation()) - GetActorRotation()).GetNormalized();
@@ -197,21 +201,28 @@ void AK7Civilian::ft() {// first think it faster then ok happend and it just anl
         currekNpc = Cast<AK7Npc>(currentC);
         currekAct = Cast<AK7InterstAct>(currentC);
         if (currentC) {
-            PointB = currentC->GetActorLocation();
+            if (!investig.Active ) {
+                PointB = currentC->GetActorLocation();
+            }
+            
             
         }
         else { // random if nothing intersting got find to watch.
             AActor* planB = getNearstNpDir(max, 180.f);
             currekNpc = Cast<AK7Npc>(planB);
             if (planB) {
-                PointB = planB->GetActorLocation();
+                if (!investig.Active) {
+                    PointB = planB->GetActorLocation();
+                }
             }
             else {
                 FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
                 float RandomDistance = FMath::FRandRange(0.0f, max);
                 float ConeHalfAngleDegrees = 15.0f;
                 FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
-                PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
+                if (!investig.Active) {
+                    PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
+                }
             }
             
             
@@ -323,8 +334,13 @@ void AK7Civilian::ok() { // it function of hard thinking that decide by current 
         biggestScore = workScore;
         finalTask = ETaskType::Work;
     }
-
-    if (scary > 100 * chill) {
+    if (investig.InterStats > 0 && investig.Active) {//it make ok not over ride invastigate if happend and do that the system is being active
+        finalTask = ETaskType::None;
+    }
+    else {
+        endInvestg();
+    }
+    if (scary > 300 * chill) {
         finalTask = ETaskType::Safe;
 
     }
@@ -1428,5 +1444,16 @@ void AK7Civilian::excuter() {
     }
 }
 void AK7Civilian::endInvestg() {
-
+    if (!investig.Active) {
+        return;
+    }
+    investig.Active = false;
+    investig.TriggerActor = nullptr;
+    investig.timeEvidFind.Empty();
+    investig.evidAct.Empty();
+    investig.InterStats = 0;
+    investig.curSuspect = nullptr;
+    if(investig.curTri != 0){ investig.pastTri = investig.curTri; } else { investig.pastTri = investig.firTri; }
+    investig.curTri = 0;investig.firTri = 0;
+    // fvector location (scene center) take same amount as they full or not so set it to zero not had any reason so yeah like that.(the time is same (the first time found like that)
 }
