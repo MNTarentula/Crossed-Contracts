@@ -106,7 +106,7 @@ void AK7Civilian::Tick(float DeltaTime)
     if (scary > 300 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
 
         if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::Safe) {
-            setter(ETaskType::Safe);
+            setter(ETaskType::Safe);//need to get cahnged becuase it not smart enough i mean what the hell i think need here change the safe place to opssite place of the thiunmk from current threat and bby the radius understand when need fall scary and when not
 
             i();
         }
@@ -272,6 +272,9 @@ void AK7Civilian::ft() {// first think it faster then ok happend and it just anl
             }
         }
         scary += timeScare / trust;
+        if (scary > 300 * chill) {
+            CurThreat = currekNpc->GetActorLocation();
+        }
     }
     else {
         if (currentC) {
@@ -360,37 +363,71 @@ void AK7Civilian::ok() { // it function of hard thinking that decide by current 
 void AK7Civilian::i() { // i it excution of the body it chosse nearest point of the task and go to them, that function not decide it do.
     if (!curAreaT)
         return;
-    float Dist = FVector::Dist(GetActorLocation(), PointB);
-    float minRename = 5000000.f;
-    FVector WP = FVector::ZeroVector;
-    AATaskArea* AreaT = nullptr;
-    for (AATaskArea* Area : Areas)
-    {
-        if (!Area)
-            continue;
-        if (Area->TaskType == curAreaT->TaskType)
-        {
-            float Distance = FVector::Distance(GetActorLocation(), Area->location);
 
-            if (Distance < minRename)
+    if (curAreaT->TaskType == ETaskType::Safe) {// if safe it need be counted but range from threat not min neeed max for start 
+
+        float minRename = 0.f;
+        FVector WP = FVector::ZeroVector;
+        AATaskArea* AreaT = nullptr;
+        for (AATaskArea* Area : Areas)
+        {
+            if (!Area)
+                continue;
+            if (Area->TaskType == curAreaT->TaskType)
             {
-                minRename = Distance;
-                WP = Area->location;
-                AreaT = Area;
+                float Distance = FVector::Distance(CurThreat, Area->location);//dis bet threat and safe it it bigger then past we go to the new one like that!
+
+                if (Distance > minRename)
+                {
+                    minRename = Distance;
+                    WP = Area->location;
+                    AreaT = Area;
+                }
             }
         }
-    }
-    if (minRename != 5000000.f) {
-        randomP(WP);
-        if (AreaT) {
-            curAreaT = AreaT;
+        if (minRename != 0.f) {
+            randomP(WP);
+            if (AreaT) {
+                curAreaT = AreaT;
+            }
         }
-        
-
+        else {
+            randomP(CurThreat + GetActorRightVector()*1000);
+        }
     }
-    else if (Dist > 25.f)
-    {
-        randomP(PointB);
+    else {
+        float Dist = FVector::Dist(GetActorLocation(), PointB);
+        float minRename = 5000000.f;
+        FVector WP = FVector::ZeroVector;
+        AATaskArea* AreaT = nullptr;
+        for (AATaskArea* Area : Areas)
+        {
+            if (!Area)
+                continue;
+            if (Area->TaskType == curAreaT->TaskType)
+            {
+                float Distance = FVector::Distance(GetActorLocation(), Area->location);
+
+                if (Distance < minRename)
+                {
+                    minRename = Distance;
+                    WP = Area->location;
+                    AreaT = Area;
+                }
+            }
+        }
+        if (minRename != 5000000.f) {
+            randomP(WP);
+            if (AreaT) {
+                curAreaT = AreaT;
+            }
+
+
+        }
+        else if (Dist > 25.f)
+        {
+            randomP(PointB);
+        }
     }
 }
 void AK7Civilian::ctf() {// called evry 2 seconds, but only where in zone of task and had that task cant be in toilet and do the task of food. in tick main logic of check that.
@@ -409,6 +446,17 @@ void AK7Civilian::ctf() {// called evry 2 seconds, but only where in zone of tas
 void AK7Civilian::needTick() { // it update the needs evry 20 seceonds by timer zapoier or like that
     toilet+=4;
     hung+=4;
+    scary -= 4; // it not most smart it need be on where the threat so now i will try add the thing for getting 
+    intFallMen();//function to drop intrest to men only objects becuase i need that the npc can look on same npc after time 
+}
+void AK7Civilian::intFallMen() {
+    for (int i = 0; i < idsMem.Num();i++) {
+        if (manger) {
+            if (manger->chFoMe(i)) {// check for men (it only check for one id)
+                idsMem[i] -= 4;
+            }
+        }
+    }
 }
 AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
     AActor* mostHave = nullptr;

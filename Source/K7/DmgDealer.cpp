@@ -17,7 +17,13 @@ ADmgDealer::ADmgDealer()
 void ADmgDealer::BeginPlay()
 {
 	Super::BeginPlay();
-
+}
+bool ADmgDealer::chFoMe(uint8 a) {
+	if (-1 < a && a < regOb.Num()) { // check if what i get safe becuase i prevent crash in manger becuase here i not gonna to polish not like in civlian!
+		AK7Npc* time = Cast<AK7Npc>(regOb[a]);
+		return (IsValid(time));
+	}
+	return false;
 }
 void ADmgDealer::regUnObj(AActor* a)
 {

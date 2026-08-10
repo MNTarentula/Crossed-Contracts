@@ -21,6 +21,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	TArray<uint8> ids;
 	void regUnObj(AActor* a);
+	bool chFoMe(uint8 a);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

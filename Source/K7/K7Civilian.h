@@ -63,9 +63,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void intFallMen();
 	ACharacter* getNearstNpDir(float MaxRange, float MaxAngleDegrees);
 	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);
 	FVector PointB;
+	FVector CurThreat;
 	bool NoButI = false;
 	int workspace;
 	//invastigation fundation
