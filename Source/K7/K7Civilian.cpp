@@ -1354,8 +1354,73 @@ void AK7Civilian::decInvestAc() {
             excuter();
             return;
         }
-        else if (chill < 1.25) {
-
+        else if (chill < 1.25) {// normal man not super chill and not parnoied
+            if (investig.Danger > 70) {
+                CurInvesActi = EInvestigationAction::FindHelp;
+                excuter();
+                return;
+            }
+            if (curTri == 9 && triSucs > 75) {
+                CurInvesActi = EInvestigationAction::FindHelp;
+                excuter();
+                return;
+            }
+            if (curTri == 9 && triSucs > 35) {
+                if (PrevInvesActi == EInvestigationAction::AskPerson) {
+                    CurInvesActi = EInvestigationAction::FindHelp;// that also need change by the answer of the man but now it not count and not mean so like that.in idea it change the triSucs so no worries
+                }
+                else {
+                    CurInvesActi = EInvestigationAction::AskPerson;
+                }
+                excuter();
+                return;
+            }
+            if (investig.MedicalConcern > 37) {
+                if (PrevInvesActi == EInvestigationAction::LookAround) {
+                    CurInvesActi = EInvestigationAction::HelpPerson;
+                }
+                else {
+                    CurInvesActi = EInvestigationAction::LookAround;
+                }
+                excuter();
+                return;
+            }
+            if (curTri == 9 && triSucs > 15) {
+                if (PrevInvesActi == EInvestigationAction::FollowPerson)
+                {
+                    CurInvesActi = EInvestigationAction::FindHelp;
+                }
+                else if (PrevInvesActi == EInvestigationAction::Approach)
+                {
+                    CurInvesActi = EInvestigationAction::FollowPerson;
+                }
+                else
+                {
+                    CurInvesActi = EInvestigationAction::Approach;
+                }
+                excuter();
+                return;
+            }
+            if (curTri == 7 && triSucs > 25) {
+                CurInvesActi = EInvestigationAction::FindHelp;
+                excuter();
+                return;
+            }
+            
+            if (PrevInvesActi == EInvestigationAction::LookAround)
+            {
+                CurInvesActi = EInvestigationAction::LeaveScene;
+            }
+            else if (PrevInvesActi == EInvestigationAction::Approach)
+            {
+                CurInvesActi = EInvestigationAction::LookAround;
+            }
+            else
+            {
+                CurInvesActi = EInvestigationAction::Approach;
+            }
+            excuter();
+            return;
         }
         else {
             if (curTri == 9 && triSucs > 95) {
@@ -1486,7 +1551,12 @@ void AK7Civilian::excuter() {
         break;
 
     case EInvestigationAction::FindHelp:
-        
+        getNearstNpDir(5000.f, 360);// now just nearest npc, in future it need be gaurd, or medic or anything more special and only then npc also it need be who you trust or get any trust suspect cant be to who you come to ask help
+        if (currekNpc) {
+            if (currekNpc != investig.curSuspect) {
+                randomP(currekNpc->GetActorLocation());
+            }
+        }
         break;
 
     case EInvestigationAction::LeaveScene:
@@ -1499,12 +1569,19 @@ void AK7Civilian::excuter() {
         break;
 
     case EInvestigationAction::Approach:
+        PointB = investig.SceneCenter;
+        randomP(PointB - GetActorRightVector() * 50);
         break;
     case EInvestigationAction::KeepDistance:
+        randomP(investig.SceneCenter - GetActorRightVector() * 2000);
         break;
     case EInvestigationAction::AskPerson:
+        //here be ask person function but now clear becuase not had that mehanic
+        PointB = investig.SceneCenter;
+        randomP(PointB - GetActorRightVector() * 200);
         break;
     case EInvestigationAction::None:
+        //not should be possible btw
         break;
     }
     GetWorldTimerManager().SetTimer(// it the excution time if we not get dec before we will call dec(in idea it should be in each case self timer for excution for follow much bigger then 5 seconds, and for leave scene even not need that timer.
