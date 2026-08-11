@@ -106,8 +106,7 @@ void AK7Civilian::Tick(float DeltaTime)
     if (scary > 300 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
 
         if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::Safe) {
-            setter(ETaskType::Safe);//need to get cahnged becuase it not smart enough i mean what the hell i think need here change the safe place to opssite place of the thiunmk from current threat and bby the radius understand when need fall scary and when not
-
+            setter(ETaskType::Safe);//setter for safe,and after excute the run to the safe place!.
             i();
         }
     }else if (interst > 80 && (currekNpc || currekAct) && !investig.Active) {//it interst setter
@@ -150,7 +149,7 @@ void AK7Civilian::Tick(float DeltaTime)
     }
 	TargetRotation.Yaw = FMath::Clamp(TargetRotation.Yaw, -MaxLookAngle, MaxLookAngle);
 	TargetRotation.Pitch = FMath::Clamp(TargetRotation.Pitch, -MaxLookAngle, MaxLookAngle);
-	TargetRotation.Roll = 0.0f; // Necks don't usually roll much sideways while tracking
+	TargetRotation.Roll = 0.0f;
 
 	// Smoothly interpolate from current head rotation to the target rotation
 	RotatorHead = FMath::RInterpTo(RotatorHead, TargetRotation, DeltaTime, HeadInterpSpeed);
@@ -174,7 +173,7 @@ void AK7Civilian::time() {// timer setter for the ft()
         tim,
         this,
         &AK7Civilian::ft,
-        2.5f / active, //idk how good is it 5.f it 5 second if yes it need bechange by active if what it time pf look change
+        2.5f / active, 
         true
     );
 }
@@ -337,11 +336,11 @@ void AK7Civilian::ok() { // it function of hard thinking that decide by current 
         biggestScore = workScore;
         finalTask = ETaskType::Work;
     }
-    if (investig.InterStats > 0 && investig.Active) {//it make ok not over ride invastigate if happend and do that the system is being active
+    if (investig.InterStats > 0 && investig.Active) {//it make ok not over ride invastigate
         finalTask = ETaskType::None;
     }
     else {
-        endInvestg();
+        /*endInvestg();*/
     }
     if (scary > 300 * chill) {
         finalTask = ETaskType::Safe;
@@ -364,7 +363,7 @@ void AK7Civilian::i() { // i it excution of the body it chosse nearest point of 
     if (!curAreaT)
         return;
 
-    if (curAreaT->TaskType == ETaskType::Safe) {// if safe it need be counted but range from threat not min neeed max for start 
+    if (curAreaT->TaskType == ETaskType::Safe) {// if safe we take the safe location most long away from the threat location
 
         float minRename = 0.f;
         FVector WP = FVector::ZeroVector;
@@ -375,7 +374,7 @@ void AK7Civilian::i() { // i it excution of the body it chosse nearest point of 
                 continue;
             if (Area->TaskType == curAreaT->TaskType)
             {
-                float Distance = FVector::Distance(CurThreat, Area->location);//dis bet threat and safe it it bigger then past we go to the new one like that!
+                float Distance = FVector::Distance(CurThreat, Area->location);//dis bet threat and safe it it bigger then past we go to the new one like that! 
 
                 if (Distance > minRename)
                 {
@@ -446,13 +445,14 @@ void AK7Civilian::ctf() {// called evry 2 seconds, but only where in zone of tas
 void AK7Civilian::needTick() { // it update the needs evry 20 seceonds by timer zapoier or like that
     toilet+=4;
     hung+=4;
-    scary -= 4; // it not most smart it need be on where the threat so now i will try add the thing for getting 
+    float dis= FVector::Dist(GetActorLocation(), CurThreat);
+    if (dis >= 500.f) { scary -= 4; }// only go down if threat last known location is not near enough
     intFallMen();//function to drop intrest to men only objects becuase i need that the npc can look on same npc after time 
 }
 void AK7Civilian::intFallMen() {
     for (int i = 0; i < idsMem.Num();i++) {
         if (manger) {
-            if (manger->chFoMe(i)) {// check for men (it only check for one id)
+            if (manger->chFoMe(i)) {// check for men (it only check for one id(optimzation))
                 idsMem[i] -= 4;
             }
         }
@@ -716,6 +716,8 @@ void AK7Civilian::updTheo(int32 sucs,int32 tri) {
 }
 
 void AK7Civilian::decInvestAc() {
+    GetWorldTimerManager().ClearTimer(excuTim);
+    if (!investig.Active) { return; }// safe check for not call it when we leave and excuter cal it by  the timers like that, just check safe.
     const int32 Count = investig.evidAct.Num();
     if (Count == 0)
     {
@@ -731,7 +733,7 @@ void AK7Civilian::decInvestAc() {
     float SuspicionScore = 0.f;
     // 1 it be dead or no sense,2 pistol on floor,3 injured or crawling, 4 suspicons man, 5 strange sound, 6 draged man,7 possible murder, 8 possible stealing of cloth, 9 the suspect is murder!
     int32 curTri = 0; // same as fir but current and not started teahory randlor intagrated
-    int32 triSucs = 0;// 0-100 it how he sure he right if he be sure more then 90 changes by dec and chill
+    int32 triSucs = 0;// 0-100 it how he sure he right if he be sure more then 90 changes by dec and chill, but it can over 0-100 becuase man can be sure in them theaory on 1000 and small clue that say another not change them mind hard.
     for (int32 i = investig.xue; i < Count; ++i)
     {
         AActor* Ev = investig.evidAct[i];
@@ -1294,6 +1296,7 @@ void AK7Civilian::decInvestAc() {
             if (investig.Danger > 37) {
                 
                 CurInvesActi = EInvestigationAction::LeaveScene;
+                excuter();
                 return;
             }
             if (curTri == 7 && triSucs > 25 && triSucs < 60)
@@ -1304,18 +1307,20 @@ void AK7Civilian::decInvestAc() {
                 else {
                     CurInvesActi = EInvestigationAction::LookAround;
                 }
-                
+                excuter();
                 return;
             }
             
             if (curTri == 9 && triSucs > 25) {
                CurInvesActi = EInvestigationAction::FindHelp;
+               excuter();
                return;
             }
 
             if (investig.MedicalConcern > 37) {
                 if (curTri == 7 || curTri == 4 || curTri == 9) {
                     CurInvesActi = EInvestigationAction::FindHelp;
+                    excuter();
                     return;
                 }
                 else if (investig.Suspicion > 28) {
@@ -1326,10 +1331,12 @@ void AK7Civilian::decInvestAc() {
                     else {
                         CurInvesActi = EInvestigationAction::LookAround;
                     }
+                    excuter();
                     return;
                 }
                 if (investig.Danger > 27) {
                     CurInvesActi = EInvestigationAction::LeaveScene;
+                    excuter();
                     return;
                 }
                 CurInvesActi = EInvestigationAction::FindHelp;
@@ -1341,8 +1348,10 @@ void AK7Civilian::decInvestAc() {
                 else {
                     CurInvesActi = EInvestigationAction::FollowPerson;
                 }
+                excuter();
                 return;
             }
+            excuter();
             return;
         }
         else if (chill < 1.25) {
@@ -1351,6 +1360,7 @@ void AK7Civilian::decInvestAc() {
         else {
             if (curTri == 9 && triSucs > 95) {
                 CurInvesActi = EInvestigationAction::FindHelp;
+                excuter();
                 return;
             }
             if (curTri == 9 && triSucs > 65) {
@@ -1360,6 +1370,7 @@ void AK7Civilian::decInvestAc() {
                 else {
                     CurInvesActi = EInvestigationAction::AskPerson;
                 }
+                excuter();
                 return;
             }
             if (curTri == 9 && triSucs > 25) {
@@ -1375,18 +1386,22 @@ void AK7Civilian::decInvestAc() {
                 {
                     CurInvesActi = EInvestigationAction::Approach;
                 }
+                excuter();
                 return;
             }
             if (investig.Danger > 70) {
                 CurInvesActi = EInvestigationAction::FindHelp;
+                excuter();
                 return;
             }
             if (investig.MedicalConcern > 37) {
                 CurInvesActi = EInvestigationAction::HelpPerson;
+                excuter();
                 return;
             }
             if (curTri == 7 && triSucs > 25) {
                 CurInvesActi = EInvestigationAction::FindHelp;
+                excuter();
                 return;
             }
             if (PrevInvesActi == EInvestigationAction::Approach) {
@@ -1395,6 +1410,7 @@ void AK7Civilian::decInvestAc() {
             else {
                 CurInvesActi = EInvestigationAction::Approach;
             }
+            excuter();
             return;
         }
 
@@ -1445,11 +1461,12 @@ void AK7Civilian::decInvestAc() {
     }
     
     CurInvesActi = EInvestigationAction::Approach;
-
+    excuter();
 }
 
 void AK7Civilian::excuter() {
     GetWorldTimerManager().ClearTimer(invTim);
+    PrevInvesActi = CurInvesActi;
     switch (CurInvesActi)
     {
     case EInvestigationAction::LookAround:
@@ -1490,6 +1507,13 @@ void AK7Civilian::excuter() {
     case EInvestigationAction::None:
         break;
     }
+    GetWorldTimerManager().SetTimer(// it the excution time if we not get dec before we will call dec(in idea it should be in each case self timer for excution for follow much bigger then 5 seconds, and for leave scene even not need that timer.
+        excuTim,
+        this,
+        &AK7Civilian::decInvestAc,
+        5.f,
+        false
+    );
 }
 void AK7Civilian::endInvestg() {
     if (!investig.Active) {

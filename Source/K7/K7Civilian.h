@@ -42,10 +42,6 @@ struct FInvestigationContext
 	int32 triSucs = 0;// 0-100 it how he sure he right if he be sure more then 90 changes by dec and chill
 	int32 xue = 0;
 
-	bool SawBody = false;
-	bool SawWeapon = false;
-	bool HeardHelp = false;
-	bool SawRunningPerson = false;
 };
 
 UCLASS()
@@ -74,6 +70,7 @@ protected:
 	FInvestigationContext investig;
 	EInvestigationAction CurInvesActi = EInvestigationAction::None;
 	EInvestigationAction PrevInvesActi = EInvestigationAction::None;
+
 	void strInvestg();
 	void updInvestg(); 
 	void updTheo(int32 triSucs,int32 curTri);
@@ -93,7 +90,8 @@ public:
 	FTimerHandle tt;
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	FTimerHandle ers;
-
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	FTimerHandle excuTim;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<uint8> idsMem;
 
