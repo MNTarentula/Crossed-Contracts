@@ -1351,6 +1351,7 @@ void AK7Civilian::decInvestAc() {
                 excuter();
                 return;
             }
+            CurInvesActi = EInvestigationAction::Approach;
             excuter();
             return;
         }
@@ -1482,7 +1483,71 @@ void AK7Civilian::decInvestAc() {
     }
     else if (dec < 0.9) {
         if (chill < 0.75) {
+            if (investig.Danger > 37) {
+                if (PrevInvesActi == EInvestigationAction::KeepDistance) {
+                    CurInvesActi = EInvestigationAction::LeaveScene;
+                }
+                else {
+                    CurInvesActi = EInvestigationAction::KeepDistance;
+                }
+                excuter();
+                return;
+            }
+            if (curTri == 7 && triSucs > 1 && triSucs < 50)
+            {
+                if (PrevInvesActi == EInvestigationAction::LookAround) {
+                    CurInvesActi = EInvestigationAction::FindHelp;
+                }
+                else {
+                    CurInvesActi = EInvestigationAction::LookAround;
+                }
+                excuter();
+                return;
+            }
 
+            if (curTri == 9 && triSucs > 35) {
+                CurInvesActi = EInvestigationAction::FindHelp;
+                excuter();
+                return;
+            }
+
+            if (investig.MedicalConcern > 50) {
+                if (curTri == 7 || curTri == 4 || curTri == 9) {
+                    CurInvesActi = EInvestigationAction::FindHelp;
+                    excuter();
+                    return;
+                }
+                else if (investig.Suspicion > 28) {
+
+                    if (PrevInvesActi == EInvestigationAction::LookAround) {
+                        CurInvesActi = EInvestigationAction::KeepDistance;
+                    }
+                    else {
+                        CurInvesActi = EInvestigationAction::LookAround;
+                    }
+                    excuter();
+                    return;
+                }
+                if (investig.Danger > 27) {
+                    CurInvesActi = EInvestigationAction::LeaveScene;
+                    excuter();
+                    return;
+                }
+                CurInvesActi = EInvestigationAction::FindHelp;
+            }
+            if (curTri == 4) {
+                if (PrevInvesActi == EInvestigationAction::FollowPerson) {
+                    CurInvesActi = EInvestigationAction::FindHelp;
+                }
+                else {
+                    CurInvesActi = EInvestigationAction::FollowPerson;
+                }
+                excuter();
+                return;
+            }
+            CurInvesActi = EInvestigationAction::KeepDistance;
+            excuter();
+            return;
         }
         else if (chill < 1.25) {
 
