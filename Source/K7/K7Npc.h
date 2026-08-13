@@ -97,6 +97,9 @@ public:
 	float scary;// how much scary now
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "bahvior")
 	float interst;// how he interst had basiclly to do invstigate
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "bahvior")
+	float healthC; // how much health care needed to them right now
+
 
 	// i got a idea, so i will have global list arry of how much ppl you know or even better in npc list of npc (i think about hoiw it be laggy if we have 100 npc pointers at evry 100 npc like 10000 pointer maybe be laggy so i dont know here.) so idea is basic in each list we know index 1 it ben and index 0 it ivan if you know ivan trust to him grow if you talk or had previus backstory so when you know he near you and company of friends go the scary of them grow much slow becuase togther not so scary idk, and if npc go with ivan and ivan disappear scary grow faster so now what now we think about how we do that smart system hell naw now we think how i do it more basic that it work lets me cock.
 
@@ -148,11 +151,11 @@ public:
 	int32 ObId;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "interst")
 	ADmgDealer* manger;
-	/** Updates the destination coordinate while dragging */
+	/** Updates the destination coordinate while dragging **/
 	UFUNCTION(BlueprintCallable, Category = "Movement|Physics")
 	void UpdateDragLocation(FVector NewLocation);
-
-	/** Releases the bone and stops tracking */
+	bool medic = false;
+	/** Releases the bone and stops tracking **/
 	UFUNCTION(BlueprintCallable, Category = "Movement|Physics")
 	void StopDragging();
 	bool bIsBeingDragged;
