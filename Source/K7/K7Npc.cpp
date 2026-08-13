@@ -65,6 +65,12 @@ void AK7Npc::wearCurC() {// wear the current cloth (physicliy in game)
 	if (cloth) {
 		ClothMeshComponent->SetSkeletalMesh(cloth->ClothMesh);
 		cloth->AttachToNpc(this);
+		if (cloth->faction == "medi") {// killer put on him self cloth of medic now people think he is medic (good mehanic one time you shoot after the target if not see you come to you for help and you kill)
+			medic = true;
+		}
+		else {
+			medic = false;
+		}
 	}
 }
 void AK7Npc::wearOfCurC() {

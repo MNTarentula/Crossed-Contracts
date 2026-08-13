@@ -109,7 +109,14 @@ void AK7Civilian::Tick(float DeltaTime)
             setter(ETaskType::Safe);//setter for safe,and after excute the run to the safe place!.
             i();
         }
-    }else if (interst > 80 && (currekNpc || currekAct) && !investig.Active) {//it interst setter
+    }
+    else if (healthC > 25.f * chill) {// very not chill or just panic man see blood run to medic (12.5), and more chill can get injured but start invastigate if what (37.5)
+        if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::healthCar) {
+            setter(ETaskType::healthCar);
+            i();
+        }
+    }
+    else if (interst > 80 && (currekNpc || currekAct) && !investig.Active) {//it interst setter
         // logic when the civi interst in go to invastigate what is going on here.
         strInvestg();
     }
@@ -195,37 +202,33 @@ void AK7Civilian::ft() {// first think it faster then ok happend and it just anl
     int32 RandomNum = FMath::RandRange(1, 100);
     PointB = GetActorLocation();
     float max = 1000.f;
-    
-        AActor* currentC = whatMostInterstT(max, 180.f);
-        currekNpc = Cast<AK7Npc>(currentC);
-        currekAct = Cast<AK7InterstAct>(currentC);
-        if (currentC) {
-            if (!investig.Active ) {
-                PointB = currentC->GetActorLocation();
+    healthC = countHealth();//count if need go to medic or not.
+    AActor* currentC = whatMostInterstT(max, 180.f);
+    currekNpc = Cast<AK7Npc>(currentC);
+    currekAct = Cast<AK7InterstAct>(currentC);
+    if (currentC) {
+        if (!investig.Active ) {
+            PointB = currentC->GetActorLocation();
+        } 
+    }
+    else { // random if nothing intersting got find to watch.
+        AActor* planB = getNearstNpDir(max, 180.f);
+        currekNpc = Cast<AK7Npc>(planB);
+        if (planB) {
+            if (!investig.Active) {
+                PointB = planB->GetActorLocation();
             }
-            
-            
         }
-        else { // random if nothing intersting got find to watch.
-            AActor* planB = getNearstNpDir(max, 180.f);
-            currekNpc = Cast<AK7Npc>(planB);
-            if (planB) {
-                if (!investig.Active) {
-                    PointB = planB->GetActorLocation();
-                }
+        else {
+            FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
+            float RandomDistance = FMath::FRandRange(0.0f, max);
+            float ConeHalfAngleDegrees = 15.0f;
+            FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
+            if (!investig.Active) {
+                PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
             }
-            else {
-                FVector NormalizedDirection = GetActorForwardVector().GetSafeNormal();
-                float RandomDistance = FMath::FRandRange(0.0f, max);
-                float ConeHalfAngleDegrees = 15.0f;
-                FVector RandomizedDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(NormalizedDirection, ConeHalfAngleDegrees);
-                if (!investig.Active) {
-                    PointB = GetActorLocation() + (RandomizedDirection * RandomDistance);
-                }
-            }
-            
-            
         }
+    }
     //okay idea is basic as h*** do just like scary grow to interest also based on traits, and do new invstigate emrgnsy in the tick and add a task dec to ok func
 
     
@@ -392,6 +395,12 @@ void AK7Civilian::i() { // i it excution of the body it chosse nearest point of 
         }
         else {
             randomP(CurThreat + GetActorRightVector()*1000);
+        }
+    }
+    else if (curAreaT->TaskType == ETaskType::healthCar) {
+        AK7Npc* isMedic = findHealth(5000.f, 360);
+        if (IsValid(isMedic)) { // Safe check
+            randomP(isMedic->GetActorLocation());
         }
     }
     else {
@@ -624,8 +633,113 @@ ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {
 
     return NearestNPC;
 }
+//************************************************ health care system    ***************************************************************//
 
-//************************************************ invastigate functions ***************************************************************
+float AK7Civilian::countHealth() {
+    float ret=maxHp - curHP;
+    if (sol <= 1) {
+        ret = 0;
+    }
+    if (scary < 150 * chill) {
+        ret *= 1.5;
+    }
+
+    return ret;
+}
+
+AK7Npc* AK7Civilian::findHealth(float MaxRange, float MaxAngleDegrees) {
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+    TArray<AActor*> IgnoredActors;
+    IgnoredActors.Add(this); // that the npc not watch at him self 
+
+    TArray<AActor*> OverlappingActors;
+    float NearestDistanceSquared = MAX_flt;
+    // 2. Scan in a spherical range for find object that kind of Characters
+    UKismetSystemLibrary::SphereOverlapActors(
+        GetWorld(),
+        GetActorLocation(),
+        MaxRange,
+        ObjectTypes,
+        ACharacter::StaticClass(), // Filter by Character
+        IgnoredActors,
+        OverlappingActors
+    );
+
+    AK7Npc* NearestNPC = nullptr;
+    
+
+    // Get your forward vector and current location
+    FVector ForwardDir = GetActorForwardVector();
+    FVector CurrentLoc = GetActorLocation();
+
+    // 3. Filter by Direction and Find Nearest character
+    for (AActor* Actor : OverlappingActors)
+    {
+        AK7Npc* NPC = Cast<AK7Npc>(Actor);
+        if (NPC)
+        {
+            
+            if (NPC->medic) {
+                FVector DirToNPC = NPC->GetActorLocation() - CurrentLoc;
+                float DistanceSquared = DirToNPC.SizeSquared();
+                if (DistanceSquared < NearestDistanceSquared) { // select most nearest medic that can help (health care base)
+                    NearestDistanceSquared = DistanceSquared;
+                    NearestNPC = NPC;
+                }
+            }
+            
+        }
+    }
+
+    return NearestNPC;
+}
+//************************************************ find help of ppls     ***************************************************************//
+
+AK7Npc* AK7Civilian::findHalp(float MaxRange, float MaxAngleDegrees) {
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+    TArray<AActor*> IgnoredActors;
+    IgnoredActors.Add(this); 
+    TArray<AActor*> OverlappingActors;
+    float NearestDistanceSquared = MAX_flt;
+    UKismetSystemLibrary::SphereOverlapActors(
+        GetWorld(),
+        GetActorLocation(),
+        MaxRange,
+        ObjectTypes,
+        ACharacter::StaticClass(),
+        IgnoredActors,
+        OverlappingActors
+    );
+
+    AK7Npc* NearestNPC = nullptr;
+    FVector CurrentLoc = GetActorLocation();
+
+    for (AActor* Actor : OverlappingActors)
+    {
+        AK7Npc* NPC = Cast<AK7Npc>(Actor);
+        if (NPC)
+        {
+
+            if (NPC->cloth) {
+                if (cloth->faction == FString("poli") || cloth->faction == FString("mili")) {
+                    FVector DirToNPC = NPC->GetActorLocation() - CurrentLoc;
+                    float DistanceSquared = DirToNPC.SizeSquared();
+                    if (DistanceSquared < NearestDistanceSquared) { 
+                        NearestDistanceSquared = DistanceSquared;
+                        NearestNPC = NPC;
+                    }
+                } 
+            }
+        }
+    }
+
+    return NearestNPC;
+}
+
+//************************************************ invastigate functions ***************************************************************//
 
 void AK7Civilian::strInvestg() {//it called in tick when trsh hold over, it start the actions of invastigate 
     investig = FInvestigationContext();
@@ -1597,6 +1711,7 @@ void AK7Civilian::decInvestAc() {
 void AK7Civilian::excuter() {
     GetWorldTimerManager().ClearTimer(invTim);
     PrevInvesActi = CurInvesActi;
+    AK7Npc* xa;
     switch (CurInvesActi)
     {
     case EInvestigationAction::LookAround:
@@ -1616,12 +1731,21 @@ void AK7Civilian::excuter() {
         break;
 
     case EInvestigationAction::FindHelp:
-        getNearstNpDir(5000.f, 360);// now just nearest npc, in future it need be gaurd, or medic or anything more special and only then npc also it need be who you trust or get any trust suspect cant be to who you come to ask help
-        if (currekNpc) {
-            if (currekNpc != investig.curSuspect) {
-                randomP(currekNpc->GetActorLocation());
+        xa = findHalp(5000.f, 360);// work for find gaurd or atleast medic, and check it not suspect becuase ask help caugth suspect the suspect it self is wierd,
+        if (IsValid(xa)) {
+            if (xa != investig.curSuspect) {
+                randomP(xa->GetActorLocation());
             }
         }
+        else {
+            xa = findHealth(5000.f, 360);
+            if (IsValid(xa)) {
+                if (xa != investig.curSuspect) {
+                    randomP(xa->GetActorLocation());
+                }
+            }
+        }
+
         break;
 
     case EInvestigationAction::LeaveScene:

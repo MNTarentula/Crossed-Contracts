@@ -60,12 +60,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	void intFallMen();
+	//health care
+	AK7Npc* findHealth(float MaxRange, float MaxAngleDegrees);
+	float countHealth();
+	//Help
+	AK7Npc* findHalp(float MaxRange, float MaxAngleDegrees);
 	ACharacter* getNearstNpDir(float MaxRange, float MaxAngleDegrees);
 	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);
 	FVector PointB;
 	FVector CurThreat;
 	bool NoButI = false;
 	int workspace;
+	
 	//invastigation fundation
 	FInvestigationContext investig;
 	EInvestigationAction CurInvesActi = EInvestigationAction::None;

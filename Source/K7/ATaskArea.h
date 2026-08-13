@@ -15,7 +15,8 @@ enum class ETaskType : uint8
 	Shop,
 	Drink,
 	Talk,
-	Safe
+	Safe,
+	healthCar
 };
 UCLASS()
 class K7_API AATaskArea : public AActor
