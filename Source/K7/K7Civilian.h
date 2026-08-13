@@ -63,7 +63,8 @@ protected:
 	//health care
 	AK7Npc* findHealth(float MaxRange, float MaxAngleDegrees);
 	float countHealth();
-
+	//Help
+	AK7Npc* findHalp(float MaxRange, float MaxAngleDegrees);
 	ACharacter* getNearstNpDir(float MaxRange, float MaxAngleDegrees);
 	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);
 	FVector PointB;

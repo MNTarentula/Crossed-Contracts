@@ -398,7 +398,7 @@ void AK7Civilian::i() { // i it excution of the body it chosse nearest point of 
         }
     }
     else if (curAreaT->TaskType == ETaskType::healthCar) {
-        AK7Npc* isMedic = findHealth(1000.f, 360);
+        AK7Npc* isMedic = findHealth(5000.f, 360);
         if (IsValid(isMedic)) { // Safe check
             randomP(isMedic->GetActorLocation());
         }
@@ -633,7 +633,7 @@ ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {
 
     return NearestNPC;
 }
-//************************************************ health care system    ***************************************************************
+//************************************************ health care system    ***************************************************************//
 
 float AK7Civilian::countHealth() {
     float ret=maxHp - curHP;
@@ -695,7 +695,51 @@ AK7Npc* AK7Civilian::findHealth(float MaxRange, float MaxAngleDegrees) {
 
     return NearestNPC;
 }
-//************************************************ invastigate functions ***************************************************************
+//************************************************ find help of ppls     ***************************************************************//
+
+AK7Npc* AK7Civilian::findHalp(float MaxRange, float MaxAngleDegrees) {
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+    TArray<AActor*> IgnoredActors;
+    IgnoredActors.Add(this); 
+    TArray<AActor*> OverlappingActors;
+    float NearestDistanceSquared = MAX_flt;
+    UKismetSystemLibrary::SphereOverlapActors(
+        GetWorld(),
+        GetActorLocation(),
+        MaxRange,
+        ObjectTypes,
+        ACharacter::StaticClass(),
+        IgnoredActors,
+        OverlappingActors
+    );
+
+    AK7Npc* NearestNPC = nullptr;
+    FVector CurrentLoc = GetActorLocation();
+
+    for (AActor* Actor : OverlappingActors)
+    {
+        AK7Npc* NPC = Cast<AK7Npc>(Actor);
+        if (NPC)
+        {
+
+            if (NPC->cloth) {
+                if (cloth->faction == FString("poli") || cloth->faction == FString("mili")) {
+                    FVector DirToNPC = NPC->GetActorLocation() - CurrentLoc;
+                    float DistanceSquared = DirToNPC.SizeSquared();
+                    if (DistanceSquared < NearestDistanceSquared) { 
+                        NearestDistanceSquared = DistanceSquared;
+                        NearestNPC = NPC;
+                    }
+                } 
+            }
+        }
+    }
+
+    return NearestNPC;
+}
+
+//************************************************ invastigate functions ***************************************************************//
 
 void AK7Civilian::strInvestg() {//it called in tick when trsh hold over, it start the actions of invastigate 
     investig = FInvestigationContext();
@@ -1667,6 +1711,7 @@ void AK7Civilian::decInvestAc() {
 void AK7Civilian::excuter() {
     GetWorldTimerManager().ClearTimer(invTim);
     PrevInvesActi = CurInvesActi;
+    AK7Npc* xa;
     switch (CurInvesActi)
     {
     case EInvestigationAction::LookAround:
@@ -1686,12 +1731,21 @@ void AK7Civilian::excuter() {
         break;
 
     case EInvestigationAction::FindHelp:
-        getNearstNpDir(5000.f, 360);// now just nearest npc, in future it need be gaurd, or medic or anything more special and only then npc also it need be who you trust or get any trust suspect cant be to who you come to ask help
-        if (currekNpc) {
-            if (currekNpc != investig.curSuspect) {
-                randomP(currekNpc->GetActorLocation());
+        xa = findHalp(5000.f, 360);// work for find gaurd or atleast medic, and check it not suspect becuase ask help caugth suspect the suspect it self is wierd,
+        if (IsValid(xa)) {
+            if (xa != investig.curSuspect) {
+                randomP(xa->GetActorLocation());
             }
         }
+        else {
+            xa = findHealth(5000.f, 360);
+            if (IsValid(xa)) {
+                if (xa != investig.curSuspect) {
+                    randomP(xa->GetActorLocation());
+                }
+            }
+        }
+
         break;
 
     case EInvestigationAction::LeaveScene:
