@@ -4,28 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "DmgDealer.generated.h"
-
+#include "RadioItem.generated.h"
+class ADmgDealer;
 UCLASS()
-class K7_API ADmgDealer : public AActor
+class K7_API ARadioItem : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ADmgDealer();
-	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	uint8 IDcur;
-	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	TArray<AActor*> regOb;
-	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	TArray<float> infos;
-	void regUnObj(AActor* a);
-	bool chFoMe(uint8 a);
+	ARadioItem();
+	float getInfoById(uint8 id);
+	void setInfoById(uint8 id,float info);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	
+	ADmgDealer* acces;
 
 };

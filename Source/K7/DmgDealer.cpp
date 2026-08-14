@@ -49,7 +49,7 @@ void ADmgDealer::regUnObj(AActor* a)
 		d->idsMem.Add(0);
 	}
 
-	ids.Add(0); // currently useless
+	infos.Add(0.f); // the info of radio.
 	regOb.Add(a);
 	IDcur += 1;
 }

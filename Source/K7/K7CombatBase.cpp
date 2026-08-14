@@ -366,3 +366,6 @@ void AK7CombatBase::socketstuck(AK7WeaponsBase* W, AK7WeaponsBase* WO) {
         
     }
 }
+float AK7CombatBase::getInfoById(uint8 id) {// in future if had radio you will can use it as killer and as gaurd killer only hear and gaurd use also
+    return 0.f;
+}

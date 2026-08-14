@@ -7,7 +7,7 @@
 #include "K7WeaponsBase.h"
 #include "K7WeaponTypes.h" 
 #include "K7CombatBase.generated.h"
-
+class ARadioItem;
 UCLASS()
 class K7_API AK7CombatBase : public AK7Npc
 {
@@ -19,10 +19,10 @@ public:
     TArray<AK7WeaponsBase*> Inventory;
 protected:
     virtual void BeginPlay() override;
-
+    
     UPROPERTY()
     
-
+    
     
     
     FK7RangedWeaponData CurrentRangedData;
@@ -71,5 +71,7 @@ public:
     bool SwitchWeapon(int Index);
 
     FHitResult Fire(FVector Start,FVector Direction);
-    
+    // radio
+    ARadioItem* radioCur;
+    float getInfoById(uint8 id);
 };
