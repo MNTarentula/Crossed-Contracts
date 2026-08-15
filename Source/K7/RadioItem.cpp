@@ -25,19 +25,25 @@ void ARadioItem::BeginPlay()
 	}
 }
 
-float ARadioItem::getInfoById(uint8 id) {
+float ARadioItem::getInfoById(int32 id) {
 	if (acces) {
 		if (id < acces->infos.Num()) {
-			return acces->infos[id];
+			uint8 maxsi = 0; // return most denger and why he maybe the denger like kill be higher then talk shit to a ppls.
+			for (int32 i = 0;i < acces->infos[id].InnerArray.Num();i++) {
+				if (acces->infos[id].InnerArray[i] > maxsi) {
+					maxsi = acces->infos[id].InnerArray[i];
+				}
+			}
+			return maxsi;
 		}
 	}
 	return -1.f;
 }
-void ARadioItem::setInfoById(uint8 id, float info) {
+void ARadioItem::setInfoById(int32 id, uint8 info) {
 	if (acces) {
 		if (id < acces->infos.Num()) {
-			if (info >= 0.f) {
-				acces->infos[id] = info;
+			if (info >= 0) {
+				acces->infos[id].InnerArray.Add(info);
 			}
 		}
 	}

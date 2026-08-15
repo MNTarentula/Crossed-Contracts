@@ -73,5 +73,5 @@ public:
     FHitResult Fire(FVector Start,FVector Direction);
     // radio
     ARadioItem* radioCur;
-    float getInfoById(uint8 id);
+    float getInfoById(int32 id);
 };

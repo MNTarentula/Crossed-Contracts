@@ -48,8 +48,9 @@ void ADmgDealer::regUnObj(AActor* a)
 
 		d->idsMem.Add(0);
 	}
-
-	infos.Add(0.f); // the info of radio.
+	FInnerListWrapper RowOne;
+	RowOne.InnerArray.Add(0);
+	infos.Add(RowOne); // the info of radio.
 	regOb.Add(a);
 	IDcur += 1;
 }

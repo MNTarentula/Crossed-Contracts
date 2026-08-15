@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "DmgDealer.generated.h"
-
+struct FInnerListWrapper
+{
+	TArray<uint8> InnerArray;
+};
 UCLASS()
 class K7_API ADmgDealer : public AActor
 {
@@ -15,11 +18,11 @@ public:
 	// Sets default values for this actor's properties
 	ADmgDealer();
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	uint8 IDcur;
+	int32 IDcur;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	TArray<AActor*> regOb;
-	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	TArray<float> infos;
+	FInnerListWrapper ashagdsukafd;
+	TArray<FInnerListWrapper> infos;
 	void regUnObj(AActor* a);
 	bool chFoMe(uint8 a);
 protected:

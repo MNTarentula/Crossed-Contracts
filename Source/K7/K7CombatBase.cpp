@@ -7,7 +7,7 @@
 #include "PistolCOM.h"
 #include "Engine/World.h"
 #include "K7ClothBase.h"
-
+#include "RadioItem.h"
 AK7CombatBase::AK7CombatBase()
 {
     PrimaryActorTick.bCanEverTick = true;
@@ -366,6 +366,9 @@ void AK7CombatBase::socketstuck(AK7WeaponsBase* W, AK7WeaponsBase* WO) {
         
     }
 }
-float AK7CombatBase::getInfoById(uint8 id) {// in future if had radio you will can use it as killer and as gaurd killer only hear and gaurd use also
+float AK7CombatBase::getInfoById(int32 id) {// in future if had radio you will can use it as killer and as gaurd killer only hear and gaurd use also
+    if (radioCur) {
+        return radioCur->getInfoById(id);
+    }
     return 0.f;
 }

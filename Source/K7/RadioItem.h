@@ -14,8 +14,8 @@ class K7_API ARadioItem : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ARadioItem();
-	float getInfoById(uint8 id);
-	void setInfoById(uint8 id,float info);
+	float getInfoById(int32 id);
+	void setInfoById(int32 id, uint8 info);
 
 protected:
 	// Called when the game starts or when spawned

@@ -17,6 +17,8 @@
 #include "K7WeaponsBase.h"
 #include "DmgDealer.h"
 #include "K7InterstAct.h"
+#include "K7BrainNpc.h"
+
 // Sets default values
 AK7Civilian::AK7Civilian()
 {
@@ -69,25 +71,9 @@ void AK7Civilian::randomP(const FVector& Target)
     if (!AICon)
         return;
 
-    UNavigationSystemV1* NavSys =
-        FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-
-    if (!NavSys)
-        return;
-    FNavLocation NavPoint;
-    bool bFound = NavSys->ProjectPointToNavigation(
-        Target,
-        NavPoint,
-        FVector(200.f, 200.f, 300.f) // Search box
-    );
-    
-    if (bFound)
-    {
-        NoButI = true;
-        PointB = NavPoint.Location;
-
-        AICon->MoveToLocation(PointB);
-    }
+    UK7BrainNpc::randomPi(Target, GetWorld(), AICon);
+    NoButI = true;
+    PointB = Target;
 }
 // Called every frame
 void AK7Civilian::Tick(float DeltaTime)
