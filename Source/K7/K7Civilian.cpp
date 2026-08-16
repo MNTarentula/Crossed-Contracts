@@ -560,65 +560,7 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
     }
     return mostHave;
 }
-ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {
-    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn)); 
-
-    TArray<AActor*> IgnoredActors;
-    IgnoredActors.Add(this); // that the npc not watch at him self 
-
-    TArray<AActor*> OverlappingActors;
-
-    // 2. Scan in a spherical range for find object that kind of Characters
-    UKismetSystemLibrary::SphereOverlapActors(
-        GetWorld(),
-        GetActorLocation(),
-        MaxRange,
-        ObjectTypes,
-        ACharacter::StaticClass(), // Filter by Character
-        IgnoredActors,
-        OverlappingActors
-    );
-
-    ACharacter* NearestNPC = nullptr;
-    float NearestDistanceSquared = MAX_flt;
-
-    // Get your forward vector and current location
-    FVector ForwardDir = GetActorForwardVector();
-    FVector CurrentLoc = GetActorLocation();
-
-    // 3. Filter by Direction and Find Nearest character
-    for (AActor* Actor : OverlappingActors)
-    {
-        ACharacter* NPC = Cast<ACharacter>(Actor);
-        if (NPC)
-        {
-            FVector DirToNPC = NPC->GetActorLocation() - CurrentLoc;
-            float DistanceSquared = DirToNPC.SizeSquared();
-
-            // Skip if it's further away than our current known nearest basic optimzation
-            if (DistanceSquared > NearestDistanceSquared)
-            {
-                continue;
-            }
-
-            // Direction calculation using Dot Product
-            DirToNPC.Normalize();
-            float DotProduct = FVector::DotProduct(ForwardDir, DirToNPC);
-
-            // Convert angle to threshold: cos(Angle)
-            float AngleThreshold = FMath::Cos(FMath::DegreesToRadians(MaxAngleDegrees));
-
-            if (DotProduct >= AngleThreshold)
-            {
-                NearestNPC = NPC;
-                NearestDistanceSquared = DistanceSquared;
-            }
-        }
-    }
-
-    return NearestNPC;
-}
+ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {return UK7BrainNpc::getNearstNpDir(MaxRange, MaxAngleDegrees, GetWorld(), this);}
 //************************************************ health care system    ***************************************************************//
 
 float AK7Civilian::countHealth() {

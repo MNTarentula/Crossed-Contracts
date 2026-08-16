@@ -6,12 +6,16 @@
 #include "K7GaurdBase.h"
 #include "K7GaurdNpc.generated.h"
 
-/**
- * 
- */
+class AAsultAvtomatK;
 UCLASS()
 class K7_API AK7GaurdNpc : public AK7GaurdBase
 {
 	GENERATED_BODY()
-	
+public:
+	AK7GaurdNpc();
+	virtual void BeginPlay() override;
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<AAsultAvtomatK> weap;
+
+	void shotAtTarget(AK7Npc* tar);
 };

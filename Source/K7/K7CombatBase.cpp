@@ -316,7 +316,7 @@ void AK7CombatBase::TryPickupWeapon(const FHitResult& Hit)
     
 }
 void AK7CombatBase::socketstuck(AK7WeaponsBase* W, AK7WeaponsBase* WO) {
-    // tarn fuck off no chance you understand that, it i make for you, if you read that mean you try understand, LOSER FUCK OFF
+    // Why i wrote that??
     if (WO == W)
     {
         return;
