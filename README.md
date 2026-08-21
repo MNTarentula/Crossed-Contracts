@@ -1,5 +1,5 @@
 # Crossed Contracts
-### Working on title (Project codename: K7)
+### Working title (Project codename: K7)
 
 > A multiplayer stealth sandbox where you're not the only assassin.
 

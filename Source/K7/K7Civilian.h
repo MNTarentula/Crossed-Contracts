@@ -21,8 +21,10 @@ enum class EInvestigationAction : uint8
 	FollowPerson,
 	LeaveScene
 };
+USTRUCT()
 struct FInvestigationContext
 {
+	GENERATED_BODY()
 	bool Active = false;
 	float InterStats = 0.f;
 	FVector SceneCenter;
@@ -39,7 +41,7 @@ struct FInvestigationContext
 	int32 firTri = 0;// 1 it be dead or no sense,2 pistol on floor,3 injured or crawling, 4 suspicons man, 5 strange sound, 6 draged man,7 possible murder, 8 possible stealing of cloth, 9 the suspect is murder!
 	int32 curTri = 0; // same as fir but current and not started teahory randlor intagrated
 	int32 pastTri = 0;
-	int32 triSucs = 0;// 0-100 it how he sure he right if he be sure more then 90 changes by dec and chill
+	int32 triSucs = 0;// 0-100 it how he sure he right if he be sure more then 90 changes by dec and chill,also it can over the limit of 100 becuase confidense can over 100 in idea you can sure you right on 1000 procents
 	int32 xue = 0;
 
 };
