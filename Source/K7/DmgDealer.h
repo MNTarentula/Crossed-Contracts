@@ -25,6 +25,7 @@ public:
 	TArray<FInnerListWrapper> infos;
 	void regUnObj(AActor* a);
 	bool chFoMe(uint8 a);
+	FVector currentHelp; //where gaurds should help now it one location future many and time when ask.
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

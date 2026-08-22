@@ -16,7 +16,6 @@ public:
 	ARadioItem();
 	float getInfoById(int32 id);
 	void setInfoById(int32 id, uint8 info);
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

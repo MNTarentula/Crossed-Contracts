@@ -4,9 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "K7GaurdBase.h"
+#include "ATaskArea.h"
 #include "K7GaurdNpc.generated.h"
 
 class AAsultAvtomatK;
+class AATaskArea;
+class AAIController;
+enum class EInvestigationActions : uint8
+{
+	None,
+	LookAround,
+	Approach,
+	AskPerson,
+	HelpPerson,
+	FindHelp,
+	KeepDistance,
+	FollowPerson,
+	LeaveScene
+};
+
 USTRUCT()
 struct FInvestigationContextG
 {
@@ -39,9 +55,50 @@ class K7_API AK7GaurdNpc : public AK7GaurdBase
 public:
 	AK7GaurdNpc();
 	virtual void BeginPlay() override;
+	UPROPERTY()
+	AAIController* AICon = nullptr;
+	TArray<AATaskArea*> Areas;
+	AATaskArea* curAreaT;
+
 	UPROPERTY(VisibleAnywhere)
 	TSubclassOf<AAsultAvtomatK> weap;
+	virtual void Tick(float DeltaTime) override;
 	void shotAtTarget(AK7Npc* tar);
+	UPROPERTY(BlueprintReadOnly, Category = "ft")
+	FTimerHandle tim;
+	UPROPERTY(BlueprintReadOnly, Category = "invest ft")
+	FTimerHandle invTim;
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	FTimerHandle zapoi;
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	FTimerHandle tt;
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	FTimerHandle ers;
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	FTimerHandle excuTim;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<uint8> idsMem;
+
+	AATaskArea* postLast;
+	FVector PointB;
+	FVector CurThreat;
+	bool NoButI = false;
+	int workspace;
+	ACharacter* getNearstNpDir(float MaxRange, float MaxAngleDegrees);
+	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);
+	void time();
+	void eers();
+	void Zapoier();
+	void needTick();
+	void ft();
+	void ok();
+	void i();
+	void setter(ETaskType a);
+	void ctf();
+	void randomP(const FVector& Target);
+	void intFallMen();
 protected:
-	FInvestigationContextG investigG;
+	FInvestigationContextG investig;
+	EInvestigationActions CurInvesActi = EInvestigationActions::None;
+	EInvestigationActions PrevInvesActi = EInvestigationActions::None;
 };

@@ -16,7 +16,8 @@ enum class ETaskType : uint8
 	Drink,
 	Talk,
 	Safe,
-	healthCar
+	healthCar,
+	post
 };
 UCLASS()
 class K7_API AATaskArea : public AActor
@@ -39,5 +40,7 @@ public:
 	FVector location;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Radius = 200.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 isTaked = -1;
 
 };

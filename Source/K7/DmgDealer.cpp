@@ -11,6 +11,7 @@ ADmgDealer::ADmgDealer()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	IDcur = 0;
+	currentHelp = FVector(9999.f);
 }
 
 // Called when the game starts or when spawned
