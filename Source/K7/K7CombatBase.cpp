@@ -315,6 +315,8 @@ void AK7CombatBase::TryPickupWeapon(const FHitResult& Hit)
     }
     
 }
+
+
 void AK7CombatBase::socketstuck(AK7WeaponsBase* W, AK7WeaponsBase* WO) {
     // Why i wrote that??
     if (WO == W)

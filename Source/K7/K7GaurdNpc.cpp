@@ -2,7 +2,7 @@
 
 
 #include "K7GaurdNpc.h"
-#include "AsultAvtomatK.h"
+#include "K7RangedWeapons.h"
 #include "K7BrainNpc.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"
@@ -34,14 +34,22 @@ void AK7GaurdNpc::BeginPlay() {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this; 
 	SpawnParams.Instigator = GetInstigator();
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn; // Handles collisions safely
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	CollectWeapon(GetWorld()->SpawnActor<AAsultAvtomatK>(
-		weap,
-		SpawnLocation,
-		SpawnRotation,
-		SpawnParams
-	));
+    if (weapClassExplain) {
+        UE_LOG(LogTemp, Warning, TEXT("class ak null bruh:"));
+    }
+    AK7RangedWeapons* timeingProblem = GetWorld()->SpawnActor<AK7RangedWeapons>(
+        weapClassExplain,
+        SpawnLocation,
+        SpawnRotation,
+        SpawnParams
+    ); 
+
+    if (timeingProblem) {
+        UE_LOG(LogTemp, Warning, TEXT("PROBELM id is:"));
+    }
+	CollectWeapon(timeingProblem);
 	socketstuck(CurrentWeapon, nullptr);
 
     AICon = Cast<AAIController>(GetController());
@@ -102,6 +110,40 @@ void AK7GaurdNpc::shotAtTarget(AK7Npc* tar) {
 void AK7GaurdNpc::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+    float Dist = FVector::Dist(GetActorLocation(), PointB);
+
+    if (Dist < 50.f && (curAreaT == nullptr || curAreaT->TaskType == ETaskType::None))// if not had a task just not stop wander and find new thing to look at
+    {
+        NoButI = false;
+        ft();
+    }
+
+    if (scary > 300 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
+
+        if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::Safe) {
+            setter(ETaskType::Safe);//setter for safe,and after excute the run to the safe place!.
+            i();
+        }
+    }
+    if ((curAreaT == nullptr || curAreaT->TaskType == ETaskType::None) && !NoButI) {
+        randomP(PointB);
+    }
+
+    FRotator TargetRotation = (UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PointB) - GetActorRotation()).GetNormalized();
+    if (currekNpc) {
+        TargetRotation = (UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), currekNpc->GetActorLocation()) - GetActorRotation()).GetNormalized();
+    }
+    TargetRotation.Yaw = FMath::Clamp(TargetRotation.Yaw, -MaxLookAngle, MaxLookAngle);
+    TargetRotation.Pitch = FMath::Clamp(TargetRotation.Pitch, -MaxLookAngle, MaxLookAngle);
+    TargetRotation.Roll = 0.0f;
+
+    // Smoothly interpolate from current head rotation to the target rotation
+    RotatorHead = FMath::RInterpTo(RotatorHead, TargetRotation, DeltaTime, HeadInterpSpeed);
+
+
+
+
 
 }
 
@@ -227,8 +269,8 @@ void AK7GaurdNpc::ok() { // it function of hard thinking that decide by current 
     int postScore;
 
     postScore = work * (workP + FMath::Clamp(toilet / 100, 0, 5)) * 2 / chill; // if chill the work not so importnat (cuz he gaurd like that)
-    toiletScore = toilet * (toiletP + FMath::Clamp(toilet / 100, 0, 5));
-    hungScore = hung * (hungP + FMath::Clamp(hung / 100, 0, 5));
+    toiletScore = toilet * (toiletP + FMath::Clamp(toilet / 100, 0, 5)) / 2;
+    hungScore = hung * (hungP + FMath::Clamp(hung / 100, 0, 5)) / 2;
     
     int biggestScore = -1;
     ETaskType finalTask = ETaskType::None;
@@ -236,7 +278,7 @@ void AK7GaurdNpc::ok() { // it function of hard thinking that decide by current 
     if (toiletScore > biggestScore)
     {
         biggestScore = toiletScore;
-        finalTask = ETaskType::Toilet;
+        finalTask = ETaskType::Toilet; 
     }
 
     if (hungScore > biggestScore)
@@ -262,6 +304,10 @@ void AK7GaurdNpc::ok() { // it function of hard thinking that decide by current 
         setter(finalTask);
         if (curAreaT != nullptr) {
             if (curAreaT->TaskType == finalTask) {
+                if (finalTask == ETaskType::post) {
+                    post = posts[posts.Num() % postLast]; // 2 % 2 =0  2 % 1 = 1 
+                    postLast = posts.Num() % postLast + 1;
+                }
                 i();
             }
         }
@@ -308,49 +354,27 @@ void AK7GaurdNpc::i() { // i it excution of the body it chosse nearest point of 
     else if (curAreaT->TaskType == ETaskType::Work) {
         if (IsValid(manger)) { randomP(manger->currentHelp); }
     }
-    else if(curAreaT->TaskType == ETaskType::post){
-        FVector WP = FVector::ZeroVector;
-        AATaskArea* AreaT = nullptr;
-        
-        
-        for (AATaskArea* Area : Areas)
-        {
-            if (!Area)
-                continue;
-            if (Area->TaskType == curAreaT->TaskType)
-            {
-                if (Area->isTaked == ObId) {
-                    if (postLast == Area) {
-                        continue;
-                    }
-                    WP = Area->location;
-                    AreaT = Area;
-                    postLast = Area;
-                }
-                
-
-            }
-        }
-        if(AreaT){ randomP(WP); curAreaT = AreaT;}
+    else if(post){
+        randomP(post->location);
     }
     else {
         float Dist = FVector::Dist(GetActorLocation(), PointB);
         float minRename = 5000000.f;
         FVector WP = FVector::ZeroVector;
         AATaskArea* AreaT = nullptr;
-        for (AATaskArea* Area : Areas)
+        for (AATaskArea* po : posts)
         {
-            if (!Area)
+            if (!po)
                 continue;
-            if (Area->TaskType == curAreaT->TaskType)
+            if (po->TaskType == curAreaT->TaskType)
             {
-                float Distance = FVector::Distance(GetActorLocation(), Area->location);
+                float Distance = FVector::Distance(GetActorLocation(), po->location);
 
                 if (Distance < minRename)
                 {
                     minRename = Distance;
-                    WP = Area->location;
-                    AreaT = Area;
+                    WP = po->location;
+                    AreaT = po;
                 }
             }
         }
@@ -359,8 +383,6 @@ void AK7GaurdNpc::i() { // i it excution of the body it chosse nearest point of 
             if (AreaT) {
                 curAreaT = AreaT;
             }
-
-
         }
         else if (Dist > 25.f)
         {
@@ -496,6 +518,12 @@ AActor* AK7GaurdNpc::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
         float dis = FVector::Distance(GetActorLocation(), Actor->GetActorLocation());
         currentI += (MaxRange - dis) / 5;
         UE_LOG(LogTemp, Warning, TEXT("cur interst is: %d"), currentI);
+        if (idsMem.Num() <= curId) {
+            curId = idsMem.Num() - 1;
+        }
+        if (1 > curId) {
+            curId = 1;
+        }
         if (idsMem[curId] <= currentI) {
             idsMem[curId] = currentI;
             if (currentI > maximums) {
@@ -542,4 +570,7 @@ void AK7GaurdNpc::Zapoier() {// timer setter for the needs.
         20.f,
         true
     );
+}
+bool AK7GaurdNpc::theTargetShot(AK7CombatBase* a) {
+    return false;
 }

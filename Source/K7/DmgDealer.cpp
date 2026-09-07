@@ -5,6 +5,7 @@
 #include "K7InterstAct.h"
 #include "K7Npc.h"
 #include "K7Civilian.h"
+#include "K7GaurdNpc.h"
 // Sets default values
 ADmgDealer::ADmgDealer()
 {
@@ -45,7 +46,12 @@ void ADmgDealer::regUnObj(AActor* a)
 	}
 	for (AActor* c : regOb) {
 		AK7Civilian* d = Cast<AK7Civilian>(c);
-		if (!d) { continue; }
+		if (!d) {
+			AK7GaurdNpc* e = Cast<AK7GaurdNpc>(c);
+			if (!e) { continue; }
+			e->idsMem.Add(0);
+			continue;
+		}
 
 		d->idsMem.Add(0);
 	}
