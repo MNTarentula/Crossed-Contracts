@@ -214,7 +214,6 @@ FHitResult AK7CombatBase::Fire(FVector Start, FVector Direction)
                 ECC_Visibility,
                 QueryParams
             );
-
             DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1.0f, 0, 2.0f);
         }
     }

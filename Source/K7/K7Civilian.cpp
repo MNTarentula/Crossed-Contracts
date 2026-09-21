@@ -518,6 +518,7 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
                 }
                 
                 for (AK7WeaponsBase* w12 : wNp->Inventory) {
+                    if (!IsValid(w12) || !w12->MeshComponent) { continue; }
                     if (w12->MeshComponent->GetVisibleFlag()) {
                         if (w12 != wNp->CurrentWeapon) {
                             currentI += 70;
@@ -560,7 +561,7 @@ AActor* AK7Civilian::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
     }
     return mostHave;
 }
-ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {return UK7BrainNpc::getNearstNpDir(MaxRange, MaxAngleDegrees, GetWorld(), this);}
+ACharacter* AK7Civilian::getNearstNpDir(float MaxRange, float MaxAngleDegrees) {return UK7BrainNpc::getNearstNpDir(MaxRange, MaxAngleDegrees, GetWorld(), this, this->GetActorLocation());}
 //************************************************ health care system    ***************************************************************//
 
 float AK7Civilian::countHealth() {

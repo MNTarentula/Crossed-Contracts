@@ -70,6 +70,8 @@ void AK7GaurdNpc::BeginPlay() {
     if (manger) {
         idsMem.SetNumZeroed(manger->IDcur);
     }
+
+    work = 100;
 }
 
 void AK7GaurdNpc::randomP(const FVector& Target){if (!AICon){ return; }UK7BrainNpc::randomPi(Target, GetWorld(), AICon);NoButI = true;PointB = Target;}
@@ -77,36 +79,53 @@ void AK7GaurdNpc::randomP(const FVector& Target){if (!AICon){ return; }UK7BrainN
 void AK7GaurdNpc::shotAtTarget(AK7Npc* tar) {
 	if (IsValid(tar)) {
 		if (CurrentWeapon) {
-			FVector Direction = tar->GetActorLocation() - GetActorLocation();
-			Fire(GetActorLocation(), Direction);
+            fires(tar);
 		}
 		else {
 			SwitchWeapon(0);
 			if (CurrentWeapon) {
-				FVector Direction = tar->GetActorLocation() - GetActorLocation();
-				Fire(GetActorLocation(), Direction);
+                fires(tar);
 			}
 			return;
-
 		}
 	}
 	else {
-		tar = Cast<AK7Npc>(UK7BrainNpc::getNearstNpDir(5000.f, 180.f, GetWorld(), this));
+		tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
 		if (CurrentWeapon) {
-			FVector Direction = tar->GetActorLocation() - GetActorLocation();
-			Fire(GetActorLocation(), Direction);
+            fires(tar);
 		}
 		else {
 			SwitchWeapon(0);
 			if (CurrentWeapon) {
-				FVector Direction = tar->GetActorLocation() - GetActorLocation();
-				Fire(GetActorLocation(), Direction);
+                fires(tar);
 			}
 			return;
 
 		}
 	}return;
 }
+
+void AK7GaurdNpc::fires(AK7Npc* tar) {
+    FVector Direction = (tar->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+    shotPos = 1;
+    ResetCombatCooldown();
+    FHitResult Hit = Fire(GetActorLocation(), Direction);
+
+    if (Hit.bBlockingHit && Hit.GetActor())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s | Component: %s"), *Hit.GetActor()->GetName(), *Hit.GetComponent()->GetName());
+        UE_LOG(LogTemp, Warning, TEXT("Hit Bone: %s"), *Hit.BoneName.ToString());
+
+        AK7Npc* Npc = Cast<AK7Npc>(Hit.GetActor());
+        if (Npc)
+        {
+            float DynamicDamage = CurrentRangedData.Damage;
+            Npc->getDamgetf(DynamicDamage, Hit);
+        }
+    }
+}
+
+
 void AK7GaurdNpc::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -116,14 +135,22 @@ void AK7GaurdNpc::Tick(float DeltaTime)
     if (Dist < 50.f && (curAreaT == nullptr || curAreaT->TaskType == ETaskType::None))// if not had a task just not stop wander and find new thing to look at
     {
         NoButI = false;
-        ft();
+        
     }
 
-    if (scary > 300 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
+    if (scary > 2000 * chill) {//it scary setter and maker, if currentlly the npc is over the threshold he start run to safe place, because seacurity and safe of the person is reflex and after go the task and other thinks
 
         if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::Safe) {
             setter(ETaskType::Safe);//setter for safe,and after excute the run to the safe place!.
             i();
+        }
+    }
+    else if (healthC > 5.f * chill) {// very not chill or just panic man see blood run to medic (12.5), and more chill can get injured but start invastigate if what (37.5)
+        if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::healthCar) {
+            setter(ETaskType::healthCar);
+            AK7Npc* targ = Cast<AK7Npc>(getNearstNpDirInPoint(CurThreat, 100.f, 360.f));
+            shotAtTarget(targ);
+            //i();
         }
     }
     if ((curAreaT == nullptr || curAreaT->TaskType == ETaskType::None) && !NoButI) {
@@ -154,6 +181,7 @@ void AK7GaurdNpc::ft() {// first think it faster then ok happend and it just anl
     int32 RandomNum = FMath::RandRange(1, 100);
     PointB = GetActorLocation();
     float max = 1000.f;
+    healthC = countHealth();
     AActor* currentC = whatMostInterstT(max, 180.f);
     currekNpc = Cast<AK7Npc>(currentC);
     currekAct = Cast<AK7InterstAct>(currentC);
@@ -268,7 +296,7 @@ void AK7GaurdNpc::ok() { // it function of hard thinking that decide by current 
     int hungScore;
     int postScore;
 
-    postScore = work * (workP + FMath::Clamp(toilet / 100, 0, 5)) * 2 / chill; // if chill the work not so importnat (cuz he gaurd like that)
+    postScore = work * (workP + FMath::Clamp(work / 100, 0, 5)) * 2 / chill; // if chill the work not so importnat (cuz he gaurd like that)
     toiletScore = toilet * (toiletP + FMath::Clamp(toilet / 100, 0, 5)) / 2;
     hungScore = hung * (hungP + FMath::Clamp(hung / 100, 0, 5)) / 2;
     
@@ -486,6 +514,7 @@ AActor* AK7GaurdNpc::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
                 }
 
                 for (AK7WeaponsBase* w12 : wNp->Inventory) {
+                    if (!IsValid(w12) || !w12->MeshComponent) { continue; }
                     if (w12->MeshComponent->GetVisibleFlag()) {
                         if (w12 != wNp->CurrentWeapon) {
                             currentI += 70;
@@ -535,8 +564,8 @@ AActor* AK7GaurdNpc::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
     }
     return mostHave;
 }
-ACharacter* AK7GaurdNpc::getNearstNpDir(float MaxRange, float MaxAngleDegrees) { return UK7BrainNpc::getNearstNpDir(MaxRange, MaxAngleDegrees, GetWorld(), this); }
-
+ACharacter* AK7GaurdNpc::getNearstNpDir(float MaxRange, float MaxAngleDegrees) { return UK7BrainNpc::getNearstNpDir(MaxRange, MaxAngleDegrees, GetWorld(), this,this->GetActorLocation()); }
+ACharacter* AK7GaurdNpc::getNearstNpDirInPoint(FVector point,float MaxRange, float MaxAngleDegrees){ return UK7BrainNpc::getNearstNpDir(MaxRange, MaxAngleDegrees, GetWorld(), this, point); }
 //timers
 void AK7GaurdNpc::eers() {// timer setter for the ok()
 
@@ -573,4 +602,15 @@ void AK7GaurdNpc::Zapoier() {// timer setter for the needs.
 }
 bool AK7GaurdNpc::theTargetShot(AK7CombatBase* a) {
     return false;
+}
+float AK7GaurdNpc::countHealth() {
+    float ret = maxHp - curHP;
+    if (sol <= 1) {
+        ret = 0;
+    }
+    if (scary < 150 * chill) {
+        ret *= 1.5;
+    }
+
+    return ret;
 }

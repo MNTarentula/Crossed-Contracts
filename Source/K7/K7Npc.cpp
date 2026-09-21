@@ -131,36 +131,31 @@ void AK7Npc::Tick(float DeltaTime)
 	{
 		PhysicsHandle->SetTargetLocation(TargetDragLocation);
 	}
-	if (curHP >= 60) {
+	if (curHP >= 60 && sol != 3) {
 		sol = 3;
 		maxSpead = 250.f;
 	}
-	else if (35 < curHP && curHP < 60) {
+	else if (35 < curHP && curHP < 60 && sol != 2) {
 		sol = 2; //it crauliing and be like 1/2 alive and feal bad, slow walk and all like that
 		maxSpead = 125.f;
 	}
-	else if (0 < curHP && curHP <= 35) {
+	else if (0 < curHP && curHP <= 35 && sol != 1) {
 		sol = 1; //no sanse,just laying on floor no moving at all but still alive
 	}
 	else if (curHP <= 0 && !bDead) {
 		sol = 0; // dead 
-		bDead = true; // Set this immediately so the block only executes once!
+		bDead = true;
 		USkeletalMeshComponent* MeshComp = GetMesh();
 		if (MeshComp)
 		{
-			// This is the magic line you had in StartDragging! 
-			// This keeps him solid to the floor AND solid to your line traces!
 			MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 			MeshComp->SetSimulatePhysics(true);
 			MeshComp->WakeAllRigidBodies();
 		}
-
 		if (GetCapsuleComponent())
 		{
-			// Disable the capsule so it doesn't block the player from walking over the body
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
-
 		UE_LOG(LogTemp, Warning, TEXT("NPC Died - Ragdoll Colliding Properly"));
 	}
 }
@@ -190,6 +185,7 @@ void AK7Npc::getDamgetf(int dmg, const FHitResult& hit) {// damge setter for you
 			curHP -= dmg / 2;
 		}
 		scaryAdd(150, 0);
+		UE_LOG(LogTemp, Warning, TEXT("My integer is %d and my integer is %d"), curHP, sol);
 		FVector ImpulseDirection = hit.ImpactNormal * -1.0f;
 		if (curHP > 0 && !bDead) {
 			float LaunchPower = 32.0f; 
@@ -205,8 +201,6 @@ void AK7Npc::getDamgetf(int dmg, const FHitResult& hit) {// damge setter for you
 			);
 		}
 	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("My integer is %d and my integer is %d"), curHP, sol);
 }
 // Called to bind functionality to input
 void AK7Npc::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

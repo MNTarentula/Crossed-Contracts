@@ -80,6 +80,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<AATaskArea*> posts;
 
+	void fires(AK7Npc* tar);
+
 	AATaskArea* post;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
@@ -109,6 +111,7 @@ public:
 	int workspace;
 	ACharacter* getNearstNpDir(float MaxRange, float MaxAngleDegrees);
 	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);
+	ACharacter* getNearstNpDirInPoint(FVector point,float MaxRange, float MaxAngleDegrees);
 	void time();
 	void eers();
 	void Zapoier();
@@ -121,6 +124,7 @@ public:
 	void randomP(const FVector& Target);
 	void intFallMen();
 	bool theTargetShot(AK7CombatBase* a);
+	float countHealth();
 protected:
 	FInvestigationContextG investig;
 	EInvestigationActions CurInvesActi = EInvestigationActions::None;

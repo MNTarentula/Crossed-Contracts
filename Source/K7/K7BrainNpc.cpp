@@ -36,7 +36,7 @@ void UK7BrainNpc::randomPi(const FVector& Target, UWorld* worldBlock, AAIControl
     }
 }
 
-ACharacter* UK7BrainNpc::getNearstNpDir(float MaxRange, float MaxAngleDegrees, UWorld* worldBlock, AK7Npc* th) {
+ACharacter* UK7BrainNpc::getNearstNpDir(float MaxRange, float MaxAngleDegrees, UWorld* worldBlock, AK7Npc* th, FVector loc) {
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
     ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 
@@ -48,7 +48,7 @@ ACharacter* UK7BrainNpc::getNearstNpDir(float MaxRange, float MaxAngleDegrees, U
     // 2. Scan in a spherical range for find object that kind of Characters
     UKismetSystemLibrary::SphereOverlapActors(
         worldBlock,
-        th->GetActorLocation(),
+        loc,
         MaxRange,
         ObjectTypes,
         ACharacter::StaticClass(), // Filter by Character
@@ -61,7 +61,7 @@ ACharacter* UK7BrainNpc::getNearstNpDir(float MaxRange, float MaxAngleDegrees, U
 
     // Get your forward vector and current location
     FVector ForwardDir = th->GetActorForwardVector();
-    FVector CurrentLoc = th->GetActorLocation();
+    FVector CurrentLoc = loc;
 
     // 3. Filter by Direction and Find Nearest character
     for (AActor* Actor : OverlappingActors)
@@ -91,7 +91,7 @@ ACharacter* UK7BrainNpc::getNearstNpDir(float MaxRange, float MaxAngleDegrees, U
                 NearestDistanceSquared = DistanceSquared;
             }
         }
-    }
+    } 
 
     return NearestNPC;
 }
