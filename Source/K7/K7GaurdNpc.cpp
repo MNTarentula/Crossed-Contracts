@@ -78,31 +78,13 @@ void AK7GaurdNpc::randomP(const FVector& Target){if (!AICon){ return; }UK7BrainN
 
 void AK7GaurdNpc::shotAtTarget(AK7Npc* tar) {
 	if (IsValid(tar)) {
-		if (CurrentWeapon) {
-            fires(tar);
-		}
-		else {
-			SwitchWeapon(0);
-			if (CurrentWeapon) {
-                fires(tar);
-			}
-			return;
-		}
+        fires(tar);	
 	}
 	else {
 		tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
-		if (CurrentWeapon) {
-            fires(tar);
-		}
-		else {
-			SwitchWeapon(0);
-			if (CurrentWeapon) {
-                fires(tar);
-			}
-			return;
-
-		}
-	}return;
+        if (!tar) { return; }
+        fires(tar);
+	}
 }
 
 void AK7GaurdNpc::fires(AK7Npc* tar) {
@@ -110,7 +92,7 @@ void AK7GaurdNpc::fires(AK7Npc* tar) {
     shotPos = 1;
     ResetCombatCooldown();
     FHitResult Hit = Fire(GetActorLocation(), Direction);
-
+    niVezde();
     if (Hit.bBlockingHit && Hit.GetActor())
     {
         UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s | Component: %s"), *Hit.GetActor()->GetName(), *Hit.GetComponent()->GetName());
@@ -124,7 +106,50 @@ void AK7GaurdNpc::fires(AK7Npc* tar) {
         }
     }
 }
-
+void AK7GaurdNpc::removeTheTreat(AK7Npc* tar) {
+    if (IsValid(tar)) {
+        loopRTT(tar);
+    }
+    else {
+        tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
+        if (IsValid(tar)) {
+            loopRTT(tar);
+        }
+    }return;
+}
+void AK7GaurdNpc::loopRTT(AK7Npc* tar) {
+    if (IsValid(tar)) {
+        if (tar->sol > 0) { // still alive need to kilL(breserker mod (only for time before i ad  the enemy give up or coma, or any other feature states))
+            if (CurrentWeapon) {
+                if (WeaponType > 0 && secret == 0) {
+                    if (CurrentRangedData.CurrentAmmo > 0) {
+                        shotAtTarget(tar);
+                        GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, fireRate + 0.2f, false);
+                    }
+                    else {
+                        ReloadCurrentWeapon();
+                        GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, CurrentRangedData.realoadT + 0.2f, false);
+                    }
+                }
+            }
+            else {
+                SwitchWeapon(0);
+                if (CurrentWeapon) {
+                    if (WeaponType > 0 && secret == 0) {
+                        if (CurrentRangedData.CurrentAmmo > 0) {
+                            shotAtTarget(tar);
+                            GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, fireRate + 0.2f, false);
+                        }
+                        else {
+                            ReloadCurrentWeapon();
+                            GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, CurrentRangedData.realoadT + 0.2f, false);
+                        }
+                    } 
+                }
+            }
+        }
+    }
+}
 
 void AK7GaurdNpc::Tick(float DeltaTime)
 {
@@ -149,8 +174,7 @@ void AK7GaurdNpc::Tick(float DeltaTime)
         if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::healthCar) {
             setter(ETaskType::healthCar);
             AK7Npc* targ = Cast<AK7Npc>(getNearstNpDirInPoint(CurThreat, 100.f, 360.f));
-            shotAtTarget(targ);
-            //i();
+            removeTheTreat(targ);
         }
     }
     if ((curAreaT == nullptr || curAreaT->TaskType == ETaskType::None) && !NoButI) {

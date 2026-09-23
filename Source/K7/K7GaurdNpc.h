@@ -88,6 +88,8 @@ public:
 	TSubclassOf<AK7RangedWeapons> weapClassExplain;
 	virtual void Tick(float DeltaTime) override;
 	void shotAtTarget(AK7Npc* tar);
+	void removeTheTreat(AK7Npc* tar);
+	void loopRTT(AK7Npc* tar);
 	UPROPERTY(BlueprintReadOnly, Category = "ft")
 	FTimerHandle tim;
 	UPROPERTY(BlueprintReadOnly, Category = "invest ft")
@@ -100,6 +102,9 @@ public:
 	FTimerHandle ers;
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	FTimerHandle excuTim;
+
+	UPROPERTY(BlueprintReadOnly, Category = "FireRate")
+	FTimerHandle FireRateT;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<uint8> idsMem;
 
@@ -108,6 +113,7 @@ public:
 	FVector CurThreat;
 	int16 curThreatKindPick = 0;
 	bool NoButI = false;
+
 	int workspace;
 	ACharacter* getNearstNpDir(float MaxRange, float MaxAngleDegrees);
 	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);

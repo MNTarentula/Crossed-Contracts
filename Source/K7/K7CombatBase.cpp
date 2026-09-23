@@ -201,7 +201,7 @@ FHitResult AK7CombatBase::Fire(FVector Start, FVector Direction)
         {
             float CurrentSpread = shotPos == 2 ? CurrentRangedData.aimSpeard: CurrentRangedData.hipSpeard;
             Direction = FMath::VRandCone(Direction, CurrentSpread);
-            FVector End = Start + (Direction * CurrentRangedData.Range);
+            FVector End = Start + (Direction * CurrentRangedData.Range); 
 
             FCollisionQueryParams QueryParams;
             QueryParams.AddIgnoredActor(this);

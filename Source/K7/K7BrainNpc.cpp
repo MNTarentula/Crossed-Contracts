@@ -96,7 +96,7 @@ ACharacter* UK7BrainNpc::getNearstNpDir(float MaxRange, float MaxAngleDegrees, U
     return NearestNPC;
 }
 //*** the invastigate functions ***
-void UK7BrainNpc::teamBuilding(UWorld* worldBlock, FInvestigationContext investig, TArray<uint8> idsMem, float trust) {
+void UK7BrainNpc::teamBuilding(UWorld* worldBlock, FInvestigationContext& investig, TArray<uint8> idsMem, float trust) {
     if (!investig.Active) { return; }// safe check for not call it when we leave and excuter cal it by  the timers like that, just check safe.
     const int32 Count = investig.evidAct.Num();
     if (Count == 0)
@@ -669,7 +669,7 @@ void UK7BrainNpc::teamBuilding(UWorld* worldBlock, FInvestigationContext investi
     investig.MedicalConcern += HelpScore;
     investig.Danger += DangerScore;
 }
-void UK7BrainNpc::updTheo(int32 sucs, int32 tri,FInvestigationContext investig) {
+void UK7BrainNpc::updTheo(int32 sucs, int32 tri,FInvestigationContext& investig) {
 
     if (tri == 0 || sucs == 0)
     {
