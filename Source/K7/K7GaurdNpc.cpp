@@ -638,3 +638,72 @@ float AK7GaurdNpc::countHealth() {
 
     return ret;
 }
+
+// combat additional stuff.
+
+void AK7GaurdNpc::findCover() {
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+
+    TArray<AActor*> IgnoredActors;
+    IgnoredActors.Add(this);
+
+    TArray<AActor*> OverlappingActors;
+    TArray<AActor*> taggedOnes;
+    bool bFoundActors = UKismetSystemLibrary::SphereOverlapActors(
+        GetWorld(),
+        GetActorLocation(),
+        1000.f,
+        ObjectTypes,
+        AActor::StaticClass(),
+        IgnoredActors,
+        OverlappingActors
+    );
+    if (bFoundActors) {
+        for (AActor* Actor : OverlappingActors)
+        {
+            if (Actor && Actor->ActorHasTag(FName("cover")))
+            {
+                taggedOnes.Add(Actor);
+            }
+        }
+    }
+    int16 points = 0,maxPoints = 0;
+    UNavigationSystemV1* NavSys =
+        FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+
+    if (!NavSys)
+        return;
+
+    FNavLocation NavPoint;
+    for (AActor* act : taggedOnes) {
+        FVector Origin, Extent;
+        act->GetActorBounds(false, Origin, Extent);
+
+        FVector dir = (Origin - CurThreat);
+        dir.Z = 0.f;                       
+        dir.Normalize();
+
+        float offset = Extent.Size2D() + 60.f;
+        FVector hidePoint = Origin + dir * offset;
+        
+        
+        bool bFound = NavSys->ProjectPointToNavigation(
+            hidePoint,
+            NavPoint, 
+            FVector(60.f, 62.f, 100.f) // Search box
+        );
+
+        if (bFound)
+        {
+            points = 2000 - FVector::Distance(GetActorLocation(), NavPoint.Location); // then more distance them smaller amount of point he had!.
+            if (points > maxPoints) {
+                maxPoints = points;
+                coverPoint = NavPoint.Location;
+            }
+        }
+    }
+
+}

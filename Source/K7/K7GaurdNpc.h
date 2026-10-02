@@ -111,6 +111,7 @@ public:
 	int16 postLast = 1;
 	FVector PointB;
 	FVector CurThreat;
+	FVector coverPoint;
 	int16 curThreatKindPick = 0;
 	bool NoButI = false;
 
@@ -118,6 +119,7 @@ public:
 	ACharacter* getNearstNpDir(float MaxRange, float MaxAngleDegrees);
 	AActor* whatMostInterstT(float MaxRange, float MaxAngleDegrees);
 	ACharacter* getNearstNpDirInPoint(FVector point,float MaxRange, float MaxAngleDegrees);
+	void findCover();
 	void time();
 	void eers();
 	void Zapoier();
