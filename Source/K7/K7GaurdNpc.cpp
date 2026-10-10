@@ -76,81 +76,6 @@ void AK7GaurdNpc::BeginPlay() {
 
 void AK7GaurdNpc::randomP(const FVector& Target){if (!AICon){ return; }UK7BrainNpc::randomPi(Target, GetWorld(), AICon);NoButI = true;PointB = Target;}
 
-void AK7GaurdNpc::shotAtTarget(AK7Npc* tar) {
-	if (IsValid(tar)) {
-        fires(tar);	
-	}
-	else {
-		tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
-        if (!tar) { return; }
-        fires(tar);
-	}
-}
-
-void AK7GaurdNpc::fires(AK7Npc* tar) {
-    FVector Direction = (tar->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-    shotPos = 1;
-    ResetCombatCooldown();
-    FHitResult Hit = Fire(GetActorLocation(), Direction);
-    niVezde();
-    if (Hit.bBlockingHit && Hit.GetActor())
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s | Component: %s"), *Hit.GetActor()->GetName(), *Hit.GetComponent()->GetName());
-        UE_LOG(LogTemp, Warning, TEXT("Hit Bone: %s"), *Hit.BoneName.ToString());
-
-        AK7Npc* Npc = Cast<AK7Npc>(Hit.GetActor());
-        if (Npc)
-        {
-            float DynamicDamage = CurrentRangedData.Damage;
-            Npc->getDamgetf(DynamicDamage, Hit);
-        }
-    }
-}
-void AK7GaurdNpc::removeTheTreat(AK7Npc* tar) {
-    if (IsValid(tar)) {
-        loopRTT(tar);
-    }
-    else {
-        tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
-        if (IsValid(tar)) {
-            loopRTT(tar);
-        }
-    }return;
-}
-void AK7GaurdNpc::loopRTT(AK7Npc* tar) {
-    if (IsValid(tar)) {
-        if (tar->sol > 0) { // still alive need to kilL(breserker mod (only for time before i ad  the enemy give up or coma, or any other feature states))
-            if (CurrentWeapon) {
-                if (WeaponType > 0 && secret == 0) {
-                    if (CurrentRangedData.CurrentAmmo > 0) {
-                        shotAtTarget(tar);
-                        GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, fireRate + 0.2f, false);
-                    }
-                    else {
-                        ReloadCurrentWeapon();
-                        GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, CurrentRangedData.realoadT + 0.2f, false);
-                    }
-                }
-            }
-            else {
-                SwitchWeapon(0);
-                if (CurrentWeapon) {
-                    if (WeaponType > 0 && secret == 0) {
-                        if (CurrentRangedData.CurrentAmmo > 0) {
-                            shotAtTarget(tar);
-                            GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, fireRate + 0.2f, false);
-                        }
-                        else {
-                            ReloadCurrentWeapon();
-                            GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, CurrentRangedData.realoadT + 0.2f, false);
-                        }
-                    } 
-                }
-            }
-        }
-    }
-}
-
 void AK7GaurdNpc::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -472,37 +397,10 @@ void AK7GaurdNpc::intFallMen() {
     }
 }
 
-// first think,
 AActor* AK7GaurdNpc::whatMostInterstT(float MaxRange, float MaxAngleDegrees) {
     AActor* mostHave = nullptr;
-    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
-
-    TArray<AActor*> IgnoredActors;
-    IgnoredActors.Add(this);
-
-    TArray<AActor*> OverlappingActors;
     TArray<AActor*> taggedOnes;
-    bool bFoundActors = UKismetSystemLibrary::SphereOverlapActors(
-        GetWorld(),
-        GetActorLocation(),
-        MaxRange,
-        ObjectTypes,
-        AActor::StaticClass(),
-        IgnoredActors,
-        OverlappingActors
-    );
-    if (bFoundActors) {
-        for (AActor* Actor : OverlappingActors)
-        {
-            if (Actor && Actor->ActorHasTag(FName("interst")))
-            {
-                taggedOnes.Add(Actor);
-            }
-        }
-    }
-
+    findThreat(taggedOnes, 5000.f);
     int32 maximums = -1;
 
     for (AActor* Actor : taggedOnes)
@@ -616,16 +514,10 @@ void AK7GaurdNpc::time() {// timer setter for the ft()
 void AK7GaurdNpc::Zapoier() {// timer setter for the needs.
 
     GetWorldTimerManager().ClearTimer(zapoi);
-    GetWorldTimerManager().SetTimer(
-        zapoi,
-        this,
-        &AK7GaurdNpc::needTick,
-        20.f,
-        true
-    );
+    GetWorldTimerManager().SetTimer(zapoi,this,&AK7GaurdNpc::needTick,20.f,true);
 }
 bool AK7GaurdNpc::theTargetShot(AK7CombatBase* a) {
-    return false;
+    return false; 
 }
 float AK7GaurdNpc::countHealth() {
     float ret = maxHp - curHP;
@@ -639,7 +531,94 @@ float AK7GaurdNpc::countHealth() {
     return ret;
 }
 
-// combat additional stuff.
+// combat main stuff.
+
+void AK7GaurdNpc::shotAtTarget(AK7Npc* tar) {
+    if (IsValid(tar)) {
+        fires(tar);
+    }
+    else {
+        tar = Cast<AK7Npc>(getNearstNpDir(500.f, 180.f));
+        if (!tar) { return; }
+        fires(tar);
+    }
+}
+
+void AK7GaurdNpc::fires(AK7Npc* tar) {
+    FVector Direction = (tar->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+    shotPos = 1;
+    ResetCombatCooldown();
+    FHitResult Hit = Fire(GetActorLocation(), Direction);
+    niVezde();
+    if (Hit.bBlockingHit && Hit.GetActor())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s | Component: %s"), *Hit.GetActor()->GetName(), *Hit.GetComponent()->GetName());
+        UE_LOG(LogTemp, Warning, TEXT("Hit Bone: %s"), *Hit.BoneName.ToString());
+
+        AK7Npc* Npc = Cast<AK7Npc>(Hit.GetActor());
+        if (Npc)
+        {
+            float DynamicDamage = CurrentRangedData.Damage;
+            Npc->getDamgetf(DynamicDamage, Hit);
+        }
+    }
+}
+void AK7GaurdNpc::removeTheTreat(AK7Npc* tar) { // Main brain function the name not good but it what i did, so be it.
+    GetWorldTimerManager().SetTimer(statusChecker, this, &AK7GaurdNpc::getStatus, 0.5f, true);
+    
+    if (IsValid(tar)) {
+        loopRTT(tar);
+    }
+    else {
+        tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
+        if (IsValid(tar)) {
+            loopRTT(tar);
+        }
+    }return;
+}
+void AK7GaurdNpc::loopRTT(AK7Npc* tar) {
+    if (IsValid(tar)) {
+        if (tar->sol > 0) { // still alive need to kilL(breserker mod (only for time before i ad  the enemy give up or coma, or any other feature states))
+            if (CurrentWeapon) {
+                if (WeaponType > 0 && secret == 0) {
+                    if (CurrentRangedData.CurrentAmmo > 0) {
+                        shotAtTarget(tar);
+                        GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, fireRate + 0.2f, false);
+                    }
+                    else {
+                        ReloadCurrentWeapon();
+                        GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, CurrentRangedData.realoadT + 0.2f, false);
+                    }
+                }
+            }
+            else {
+                SwitchWeapon(0);
+                if (CurrentWeapon) {
+                    if (WeaponType > 0 && secret == 0) {
+                        if (CurrentRangedData.CurrentAmmo > 0) {
+                            shotAtTarget(tar);
+                            GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, fireRate + 0.2f, false);
+                        }
+                        else {
+                            ReloadCurrentWeapon();
+                            GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, CurrentRangedData.realoadT + 0.2f, false);
+                        }
+                    }
+                }
+            } 
+        }
+    }
+}
+
+
+void AK7GaurdNpc::getStatus() {
+    threatAmount = 10;
+    TArray<AActor*> taggedOne;
+    findThreat(taggedOne, 5000.f);
+    for (AActor* Actor : taggedOne) {
+
+    }
+}
 
 void AK7GaurdNpc::findCover() {
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
@@ -706,4 +685,33 @@ void AK7GaurdNpc::findCover() {
         }
     }
 
+}
+
+void AK7GaurdNpc::findThreat(TArray<AActor*>& intersting, float MaxRange) {
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+    TArray<AActor*> IgnoredActors;
+    IgnoredActors.Add(this);
+
+    TArray<AActor*> OverlappingActors;
+    bool bFoundActors = UKismetSystemLibrary::SphereOverlapActors(
+        GetWorld(),
+        GetActorLocation(),
+        MaxRange,
+        ObjectTypes,
+        AActor::StaticClass(),
+        IgnoredActors,
+        OverlappingActors
+    );
+    if (bFoundActors) {
+        for (AActor* Actor : OverlappingActors)
+        {
+            if (Actor && Actor->ActorHasTag(FName("interst")))
+            {
+                intersting.Add(Actor);
+            }
+        }
+    }
 }

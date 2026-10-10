@@ -103,6 +103,11 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	FTimerHandle excuTim;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Fight")
+	FTimerHandle statusChecker;
+	void getStatus();
+	int16 threatAmount;
+	void findThreat(TArray<AActor*>& collect, float MaxRange);
 	UPROPERTY(BlueprintReadOnly, Category = "FireRate")
 	FTimerHandle FireRateT;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
