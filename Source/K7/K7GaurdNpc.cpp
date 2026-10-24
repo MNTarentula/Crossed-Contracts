@@ -99,6 +99,7 @@ void AK7GaurdNpc::Tick(float DeltaTime)
         if (curAreaT == nullptr || curAreaT->TaskType != ETaskType::healthCar) {
             setter(ETaskType::healthCar);
             AK7Npc* targ = Cast<AK7Npc>(getNearstNpDirInPoint(CurThreat, 100.f, 360.f));
+            GetWorldTimerManager().SetTimer(statusChecker, this, &AK7GaurdNpc::getStatus, 0.5f, true);
             removeTheTreat(targ);
         }
     }
@@ -564,7 +565,6 @@ void AK7GaurdNpc::fires(AK7Npc* tar) {
     }
 }
 void AK7GaurdNpc::removeTheTreat(AK7Npc* tar) { // Main brain function the name not good but it what i did, so be it.
-    GetWorldTimerManager().SetTimer(statusChecker, this, &AK7GaurdNpc::getStatus, 0.5f, true);
     
     if (IsValid(tar)) {
         loopRTT(tar);
@@ -573,6 +573,9 @@ void AK7GaurdNpc::removeTheTreat(AK7Npc* tar) { // Main brain function the name 
         tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
         if (IsValid(tar)) {
             loopRTT(tar);
+        }
+        else {
+            GetWorldTimerManager().ClearTimer(statusChecker);
         }
     }return;
 }
@@ -590,6 +593,9 @@ void AK7GaurdNpc::loopRTT(AK7Npc* tar) {
                         GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, CurrentRangedData.realoadT + 0.2f, false);
                     }
                 }
+                else {
+                    GetWorldTimerManager().ClearTimer(statusChecker);
+                }
             }
             else {
                 SwitchWeapon(0);
@@ -604,9 +610,21 @@ void AK7GaurdNpc::loopRTT(AK7Npc* tar) {
                             GetWorldTimerManager().SetTimer(FireRateT, [this, tar]() {this->removeTheTreat(tar);}, CurrentRangedData.realoadT + 0.2f, false);
                         }
                     }
+                    else {
+                        GetWorldTimerManager().ClearTimer(statusChecker);
+                    }
+                }
+                else {
+                    GetWorldTimerManager().ClearTimer(statusChecker);
                 }
             } 
         }
+        else {
+            GetWorldTimerManager().ClearTimer(statusChecker);
+        }
+    }
+    else {
+        GetWorldTimerManager().ClearTimer(statusChecker);
     }
 }
 
