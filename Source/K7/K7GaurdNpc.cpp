@@ -565,19 +565,24 @@ void AK7GaurdNpc::fires(AK7Npc* tar) {
     }
 }
 void AK7GaurdNpc::removeTheTreat(AK7Npc* tar) { // Main brain function the name not good but it what i did, so be it.
-    
-    if (IsValid(tar)) {
-        loopRTT(tar);
+    if (threatAmount < 13) {
+        findCover();
+        randomP(coverPoint);
     }
     else {
-        tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
         if (IsValid(tar)) {
             loopRTT(tar);
         }
         else {
-            GetWorldTimerManager().ClearTimer(statusChecker);
+            tar = Cast<AK7Npc>(getNearstNpDir(5000.f, 180.f));
+            if (IsValid(tar)) {
+                loopRTT(tar);
+            }
+            else {
+                GetWorldTimerManager().ClearTimer(statusChecker);
+            }
         }
-    }return;
+    }
 }
 void AK7GaurdNpc::loopRTT(AK7Npc* tar) {
     if (IsValid(tar)) {
@@ -634,7 +639,7 @@ void AK7GaurdNpc::getStatus() {
     TArray<AActor*> taggedOne;
     findThreat(taggedOne, 5000.f);
     for (AActor* Actor : taggedOne) {
-
+        threatAmount += 1; // if many intersting object around it grow the threat, like you in combat and around you like 50 people may stay may lie it grow the threat.
     }
 }
 
@@ -668,11 +673,12 @@ void AK7GaurdNpc::findCover() {
         }
     }
     int16 points = 0,maxPoints = 0;
-    UNavigationSystemV1* NavSys =
-        FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+    UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 
-    if (!NavSys)
+    if (!NavSys) {
         return;
+    }
+       
 
     FNavLocation NavPoint;
     for (AActor* act : taggedOnes) {

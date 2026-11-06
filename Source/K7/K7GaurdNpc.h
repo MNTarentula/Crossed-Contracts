@@ -103,10 +103,11 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	FTimerHandle excuTim;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Fight")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Fight")
 	FTimerHandle statusChecker;
 	void getStatus();
-	int16 threatAmount;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Fight")
+	int32 threatAmount;
 	void findThreat(TArray<AActor*>& collect, float MaxRange);
 	UPROPERTY(BlueprintReadOnly, Category = "FireRate")
 	FTimerHandle FireRateT;
@@ -115,7 +116,9 @@ public:
 
 	int16 postLast = 1;
 	FVector PointB;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Fight")
 	FVector CurThreat;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Fight")
 	FVector coverPoint;
 	int16 curThreatKindPick = 0;
 	bool NoButI = false;
